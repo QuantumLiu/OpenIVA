@@ -17,7 +17,7 @@ so = onnxruntime.SessionOptions()
 # so.device_type = "CPU_FP32"
 batch_size=8
 
-detector=Detector("weights/face_detector_320_dy_sim.onnx",providers="tensorrt",input_size=(320,240),top_k=15)
+detector=Detector("weights/face_detector_320_dy_sim.onnx",providers="cuda",input_size=(320,240),top_k=5)
 lm_extractor=LandmarksExtractor("weights/landmarks_68_pfld_sim.onnx",sessionOptions=so,providers="tensorrt")
 rectangles_batch, probes_batch=detector.predict([img]*batch_size)
 landmarks = lm_extractor.predict(img, rectangles_batch[0])

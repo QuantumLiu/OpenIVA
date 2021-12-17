@@ -9,15 +9,15 @@ import onnxruntime
 from models.detector import Detector
 from models.alignment import LandmarksExtractor
 
-img=cv2.imread("/home/tianqing/pyprojects/FaceFusionLive/sample.jpg")
+img=cv2.imread("sample.jpg")
 
 so = onnxruntime.SessionOptions()
 # so.graph_optimization_level = onnxruntime.GraphOptimizationLevel.ORT_ENABLE_ALL
 # so.intra_op_num_threads = 12
 # so.device_type = "CPU_FP32"
-batch_size=8
+batch_size=1
 
-detector=Detector("weights/face_detector_320_dy_sim.onnx",providers="cuda",input_size=(320,240),top_k=5)
+detector=Detector("weights/face_detector_320_dy_sim.onnx",providers="tensorrt",input_size=(320,240),top_k=5)
 lm_extractor=LandmarksExtractor("weights/landmarks_68_pfld_sim.onnx",sessionOptions=so,providers="tensorrt")
 rectangles_batch, probes_batch=detector.predict([img]*batch_size)
 landmarks = lm_extractor.predict(img, rectangles_batch[0])
@@ -41,7 +41,7 @@ for _ in tqdm(range(1000)):
     landmarks = lm_extractor.predict(img, [rectangles_batch[0][0]])
 t_e=time.time()
 time_batch_lm=(t_e-t_s)/1000
-time_frame_lm=time_batch_lm/batch_size
+time_frame_lm=time_batch_lm#/batch_size
 
 landmarks = lm_extractor.predict(img, rectangles_batch[0])
 
@@ -62,4 +62,6 @@ for rect,score,landmark in zip(rectangles_batch[0],probes_batch[0],landmarks):
 name = "vis_face.jpg"
 cv2.imwrite(name, img)
 #print('Result:\n{}'.format('\n'.join([name+' '*3+'{:4f}'.format(prob) for name,prob in zip(top_names[0],top_probs[0])])))
-print('Time cost for batchsize {} :{:6f}  \nper frame : {:6f}\nFPS:{:2f}'.format(batch_size,time_batch,time_frame,1/time_frame))
+print('Time face detect cost for batchsize {} :{:6f}  \nper frame : {:6f}\nFPS:{:2f}'.format(batch_size,time_batch,time_frame,1/time_frame))
+
+print('Time face landmark alignment cost for \nper batch : {:6f}\nFPS:{:2f}'.format(time_batch_lm, 1/time_frame_lm))

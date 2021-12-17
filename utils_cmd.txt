@@ -1,0 +1,1 @@
+python -m tf2onnx.convert --keras ./face_detector_640.h5 --opset 13 --output face_detector_640_dy.onnx

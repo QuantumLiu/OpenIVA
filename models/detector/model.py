@@ -13,17 +13,19 @@ class Detector(BaseNet):
         self.top_k=top_k
         
 
-    def _pre_process(self, data_raw):
-        data_raw = cv2.resize(data_raw, self.input_size,interpolation=cv2.INTER_LINEAR)
+    @staticmethod
+    def pre_process(data_raw,target_size):
+        data_raw = cv2.resize(data_raw, target_size,interpolation=cv2.INTER_LINEAR)
         data_raw = cv2.cvtColor(data_raw, cv2.COLOR_BGR2RGB)
         data_raw=data_raw.astype(np.float32)
         data_raw=(data_raw-127.)/128.
         data_infer=np.transpose(data_raw, [2, 0, 1])#[None]
         return data_infer
 
-    def _post_process(self, outputs, w, h):
+    @staticmethod
+    def post_process(outputs, w, h,confidenceThreshold, nmsThreshold, top_k):
         boxes_batch, confidences_batch=outputs
-        rectangles_batch, probes_batch = _parse_result(w, h, boxes_batch, confidences_batch, self.confidenceThreshold, self.nmsThreshold, self.top_k)
+        rectangles_batch, probes_batch = _parse_result(w, h, boxes_batch, confidences_batch, confidenceThreshold, nmsThreshold, top_k)
         return rectangles_batch, probes_batch
 
 
@@ -33,7 +35,7 @@ class Detector(BaseNet):
             if len(data.shape)==3:
                 h,w=data.shape[:2]
 
-                data_infer=self._pre_process(data)
+                data_infer=self.pre_process(data, self.input_size)
                 data_infer=data_infer[None]
                 
             elif len(data)>4:
@@ -44,23 +46,15 @@ class Detector(BaseNet):
 
             data_infer=[]
             for data_raw in data:
-                data_infer.append(self._pre_process(data_raw))
+                data_infer.append(self.pre_process(data_raw, self.input_size))
 
-            # data_infer=np.ascontiguousarray(data_infer,dtype=np.float32)
             data_infer=np.ascontiguousarray(data_infer,dtype=np.float32)
         
-        # print(data_raw.shape)
-        # h,w,_=data_raw.shape[1:]
-            
-        # data_infer=self._pre_process(data_raw)
 
         outputs=self._infer(data_infer)
 
-        rectangles_batch, probes_batch=self._post_process(outputs,w,h)
+        rectangles_batch, probes_batch=self.post_process(outputs, w, h, self.confidenceThreshold, self.nmsThreshold, self.top_k)
 
-        # boxes=[]
-        # for rect in rectangles:
-        #     boxes.append(ToBox(rect))
 
         return  rectangles_batch, probes_batch
 
@@ -172,21 +166,6 @@ def __hard_nms(box_scores, iou_threshold, top_k=-1, candidate_size=200):
 
     return box_scores[picked, :]
 
-def ToBox(rectangle):
-    """
-    Returns rectangle scaled to box.
-    Args:
-        rectangle: Rectangle
-    Returns:
-        Rectangle
-    """
-    width = rectangle[:,2] - rectangle[:,0]
-    height = rectangle[:,3] - rectangle[:,1]
-    m = max(width, height)
-    dx = int((m - width)/2)
-    dy = int((m - height)/2)
-    
-    return [rectangle[0] - dx, rectangle[1] - dy, rectangle[2] + dx, rectangle[3] + dy]
 
 def ToBoxN(rectangle_N):
     """

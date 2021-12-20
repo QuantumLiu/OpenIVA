@@ -3,7 +3,28 @@ import numpy as np
 import cv2
 
 class BaseNet():
-    DICT_PROVIDERS={"cpu":"CPUExecutionProvider","openvino":"OpenVINOExecutionProvider","tensorrt":"TensorrtExecutionProvider","cuda":"CUDAExecutionProvider"}
+
+    DICT_PROVIDERS={
+        "cpu":("CPUExecutionProvider",{}),
+        "openvino":("OpenVINOExecutionProvider",{}),
+        "tensorrt":(
+            'TensorrtExecutionProvider', {
+            'device_id': 0,
+            'trt_fp16_enable': True,
+            'trt_max_workspace_size': 8 * 1024 * 1024 * 1024}
+            )
+            ,
+        "cuda":(
+            'CUDAExecutionProvider', {
+                'device_id': 0,
+                'arena_extend_strategy': 'kNextPowerOfTwo',
+                'gpu_mem_limit': 8 * 1024 * 1024 * 1024,
+                'cudnn_conv_algo_search': 'EXHAUSTIVE',
+                'do_copy_in_default_stream': True,}
+                )
+    }
+
+
     def __init__(self, onnx_path, sessionOptions = None,providers="cpu"):
         """
         Initializes face detector.
@@ -20,7 +41,7 @@ class BaseNet():
         self.__session = onnxruntime.InferenceSession(onnx_path, sessionOptions)#,providers=[self.provider])
         
         # print(self.__session.get_providers())
-        self.provider=(self.provider if self.provider in self.__session.get_providers() else "CPUExecutionProvider")
+        self.provider=(self.provider if self.provider[0] in self.__session.get_providers() else "CPUExecutionProvider")
 
         self.__input_name = self.__session.get_inputs()[0].name
         self.__session.set_providers(providers=[self.provider])
@@ -40,7 +61,8 @@ class BaseNet():
         return outputs
 
 
-    def _pre_process(self,data_raw):
+    @staticmethod
+    def pre_process(data_raw):
         """
         Returns pre-processed ndarray (b,h,w,c).
         Args:
@@ -50,7 +72,8 @@ class BaseNet():
         """
         pass 
 
-    def _post_process(self,outputs):
+    @staticmethod
+    def post_process(outputs):
         """
         Returns results (b,).
         Args:
@@ -68,11 +91,11 @@ class BaseNet():
         elif isinstance(data,list):
             data_raw=np.ascontiguousarray(data,dtype=np.float32)
             
-        data_infer=self._pre_process(data_raw)
+        data_infer=self.pre_process(data_raw)
 
         outputs=self._infer(data_infer)
 
-        results=self._post_process(outputs)
+        results=self.post_process(outputs)
 
         return results
 

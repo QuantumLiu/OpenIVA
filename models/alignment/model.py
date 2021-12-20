@@ -6,8 +6,15 @@ from models.base import BaseNet
 
 class LandmarksExtractor(BaseNet):
 
-
-    def _pre_process(self, data_raw):
+    @staticmethod
+    def pre_process(data_raw):
+        """
+        Returns pre-processed ndarray (1,h,w,c).
+        Args:
+            data_raw: raw data ndarray (h,w,c) 
+        Returns:
+            pre-processed ndarray (1,h,w,c)
+        """
         data_raw = cv2.resize(data_raw, (112, 112),interpolation=cv2.INTER_LINEAR)
         data_raw = cv2.cvtColor(data_raw, cv2.COLOR_BGR2RGB)
         data_raw=data_raw.astype(np.float32)
@@ -15,7 +22,15 @@ class LandmarksExtractor(BaseNet):
         data_infer=np.transpose(data_raw, [2, 0, 1])[None]
         return data_infer
 
-    def _post_process(self, outputs, w, h):
+    @staticmethod
+    def post_process(outputs, w, h):
+        """
+        Returns results (68,2).
+        Args:
+            outputs: Net outputs ndarrays 
+        Returns:
+            results: landmarks ndarrays (68,2)
+        """
         output=outputs[0][0]
         points = output.reshape(-1, 2) * (w, h)
         return points
@@ -24,7 +39,7 @@ class LandmarksExtractor(BaseNet):
     # @profile
     def predict(self,data,rectangles):
         """
-        Returns face recognition results.
+        Returns face landmarks.
         Args:
             image: Bitmap
             rectanges: Rectangles
@@ -40,9 +55,9 @@ class LandmarksExtractor(BaseNet):
         for rectangle in rectangles:
             cropped = Crop(data, rectangle)
             h,w=cropped.shape[:2]
-            data_infer=self._pre_process(cropped)
+            data_infer=self.pre_process(cropped)
             outputs = self._infer(data_infer)
-            points=self._post_process(outputs,w,h)
+            points=self.post_process(outputs,w,h)
 
             for i in range(len(points)):
                 points[i] += (rectangle[0], rectangle[1])

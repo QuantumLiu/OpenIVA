@@ -12,13 +12,13 @@ from models.alignment import LandmarksExtractor
 img=cv2.imread("sample.jpg")
 
 so = onnxruntime.SessionOptions()
-# so.graph_optimization_level = onnxruntime.GraphOptimizationLevel.ORT_ENABLE_ALL
+so.graph_optimization_level = onnxruntime.GraphOptimizationLevel.ORT_ENABLE_ALL
 # so.intra_op_num_threads = 12
 # so.device_type = "CPU_FP32"
 batch_size=1
 
-detector=Detector("weights/face_detector_320_dy_sim.onnx",providers="tensorrt",input_size=(320,240),top_k=5)
-lm_extractor=LandmarksExtractor("weights/landmarks_68_pfld_sim.onnx",sessionOptions=so,providers="tensorrt")
+detector=Detector("weights/face_detector_320_dy_sim.onnx",providers="openvino",sessionOptions=so,input_size=(320,240),top_k=5)
+lm_extractor=LandmarksExtractor("weights/landmarks_68_pfld_sim.onnx",sessionOptions=so,providers="openvino")
 rectangles_batch, probes_batch=detector.predict([img]*batch_size)
 landmarks = lm_extractor.predict(img, rectangles_batch[0])
 

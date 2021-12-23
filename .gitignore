@@ -1,3 +1,6 @@
 __pycache__
 *.lprof
 *.pyc
+datas/celebrity_images
+arc_mbv2_ccrop_sim.onnx
+arc_res50_ccrop_sim.onnx

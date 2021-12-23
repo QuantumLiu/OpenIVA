@@ -10,8 +10,8 @@ class BaseNet():
         "tensorrt":(
             'TensorrtExecutionProvider', {
             'device_id': 0,
-            'trt_fp16_enable': True,
-            'trt_max_workspace_size': 8 * 1024 * 1024 * 1024}
+            'trt_fp16_enable': False,
+            'trt_max_workspace_size': 2147483648*4}
             )
             ,
         "cuda":(
@@ -46,7 +46,7 @@ class BaseNet():
         self.__input_name = self.__session.get_inputs()[0].name
         self.__session.set_providers(providers=[self.provider])
         print("Using {} external provider".format(self.__session.get_providers()[0]))
-
+    
     def _infer(self, data_infer):
         """
         Returns onnx inference outputs.

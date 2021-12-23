@@ -23,9 +23,9 @@ class Detector(BaseNet):
         return data_infer
 
     @staticmethod
-    def post_process(outputs, w, h,confidenceThreshold, nmsThreshold, top_k):
+    def post_process(outputs, sizes_batch,confidenceThreshold, nmsThreshold, top_k):
         boxes_batch, confidences_batch=outputs
-        rectangles_batch, probes_batch = _parse_result(w, h, boxes_batch, confidences_batch, confidenceThreshold, nmsThreshold, top_k)
+        rectangles_batch, probes_batch = _parse_result(sizes_batch, boxes_batch, confidences_batch, confidenceThreshold, nmsThreshold, top_k)
         return rectangles_batch, probes_batch
 
 
@@ -33,7 +33,7 @@ class Detector(BaseNet):
     def predict(self,data):
         if isinstance(data,np.ndarray):
             if len(data.shape)==3:
-                h,w=data.shape[:2]
+                sizes_batch=[data.shape[:2]]
 
                 data_infer=self.pre_process(data, self.input_size)
                 data_infer=data_infer[None]
@@ -42,7 +42,7 @@ class Detector(BaseNet):
                 raise ValueError("Got error data dims expect 3 or 4, got {}".format(len(data)))
 
         elif isinstance(data,list):
-            h,w=data[0].shape[:2]
+            sizes_batch=[x.shape[:2] for x in data]
 
             data_infer=[]
             for data_raw in data:
@@ -53,12 +53,12 @@ class Detector(BaseNet):
 
         outputs=self._infer(data_infer)
 
-        rectangles_batch, probes_batch=self.post_process(outputs, w, h, self.confidenceThreshold, self.nmsThreshold, self.top_k)
+        rectangles_batch, probes_batch=self.post_process(outputs, sizes_batch, self.confidenceThreshold, self.nmsThreshold, self.top_k)
 
 
         return  rectangles_batch, probes_batch
 
-def _parse_result(width, height, boxes_batch, confidences_batch, prob_threshold, iou_threshold=0.5, top_k=5):
+def _parse_result(sizes_batch, boxes_batch, confidences_batch, prob_threshold, iou_threshold=0.5, top_k=5):
     """
     Selects boxes that contain human faces.
     Args:
@@ -74,7 +74,7 @@ def _parse_result(width, height, boxes_batch, confidences_batch, prob_threshold,
     """
     picked_box_batch=[]
     picked_probs_batch=[]
-    for boxes, confidences in zip(boxes_batch,confidences_batch):
+    for boxes, confidences,(height,width) in zip(boxes_batch,confidences_batch,sizes_batch):
         picked_box_probs = []
         
         for class_index in range(1, confidences.shape[1]):

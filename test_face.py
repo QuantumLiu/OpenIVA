@@ -87,8 +87,8 @@ for rect,score,landmark in zip(rectangles_batch[0],dists,landmarks):
         cv2.putText(img_wild, "The 9 Dot", (cx, cy-18),\
                     cv2.FONT_HERSHEY_DUPLEX, 0.5, (0, 255, 0))
 
-    for (x, y) in landmark:
-        cv2.circle(img_wild, (int(x), int(y)), 3, (255, 255, 0),-1)
+    # for (x, y) in landmark:
+    #     cv2.circle(img_wild, (int(x), int(y)), 1, (255, 255, 0),-1)
 
 name = "datas/imgs_results/vis_recog.jpg"
 cv2.imwrite(name, img_wild)

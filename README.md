@@ -9,14 +9,17 @@ OpenIVA implements varied mainstream facial recognition, object detection, segme
 - Supports TensorlayerX/ TensorRT/ onnxruntime
 3. High performance  
 - Achieves high performance on CPU/GPU/Ascend platforms, achieve inference speed above 3000it/s
-1. Asynchronous & multithreading
+4. Asynchronous & multithreading
 - Use multithreading and queue to achieve high device utilization for inference and pre/post-processing
-4. Lightweight service
+5. Lightweight service
 - Use Flask for lightweight intelligent application services
-5. Modular design 
+6. Modular design 
 - You can quickly start your intelligent analysis service, only need to replace the AI models
-6. GUI visualization tools  
+7. GUI visualization tools  
 - Start analysis tasks only by clicking buttons, and show visualized results in GUI windows, suitable for multiple tasks
+
+![alt Sample Face landmark](datas/imgs_results/vis_landmark.jpg)
+![alt Sample Face recognition](datas/imgs_results/vis_recog.jpg)
 
 # Performance benchmark
 ## Testing environments 

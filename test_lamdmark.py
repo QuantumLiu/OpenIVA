@@ -50,8 +50,6 @@ landmarks = lm_extractor.predict(img, rectangles_batch[-1])
 
 
 for rect,score,landmark in zip(rectangles_batch[-1],probes_batch[-1],landmarks):
-    if score<0.4:
-        continue
     rect = list(map(int, rect))
     cv2.rectangle(img, (rect[0], rect[1]), (rect[2], rect[3]), (0, 0, 255), 2)
     cx = rect[0]

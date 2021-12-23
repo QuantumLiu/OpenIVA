@@ -18,6 +18,10 @@ OpenIVA实现了各种主流的面部识别、目标检测、分割和关键点�
 7. 图形界面的可视化工具
 - 只需要点击几个按钮就可以启动分析任务， 并且可以在GUI窗口里展示可视化的结果，适合多种任务
 
+![alt Sample Face landmark](datas/imgs_results/vis_landmark.jpg)
+![alt Sample Face recognition](datas/imgs_results/vis_recog.jpg)
+
+
 # 性能基准
 ## 测试环境 
 - i5-10400 6c12t

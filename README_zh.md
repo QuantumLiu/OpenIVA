@@ -20,7 +20,7 @@ OpenIVA实现了各种主流的面部识别、目标检测、分割和关键点�
 
 ![alt Sample Face landmark](datas/imgs_results/vis_landmark.jpg)
 ![alt Sample Face recognition](datas/imgs_results/vis_recog.jpg)
-![alt Sample YOLOX](datas/imgs_results/dog.jpg)
+![alt Sample YOLOX](datas/imgs_results/vis_dog.jpg)
 
 
 # 性能基准

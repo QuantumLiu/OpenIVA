@@ -9,14 +9,14 @@ import onnxruntime
 from models.detector import Detector
 from models.alignment import LandmarksExtractor
 
-img=cv2.imread("datas/imgs_test/sample.jpg")
+img=cv2.imread("datas/imgs_test/lumia.jpg")
 
 so = onnxruntime.SessionOptions()
 so.graph_optimization_level = onnxruntime.GraphOptimizationLevel.ORT_DISABLE_ALL
 batch_size=8
 
-detector=Detector("weights/face_detector_640_dy_sim.onnx",providers="cuda",sessionOptions=so,input_size=(640,480),top_k=128)
-lm_extractor=LandmarksExtractor("weights/landmarks_68_pfld_dy_sim.onnx",sessionOptions=so,providers="cuda")
+detector=Detector("weights/face_detector_640_dy_sim.onnx",providers="tensorrt",sessionOptions=so,input_size=(640,480),top_k=68)
+lm_extractor=LandmarksExtractor("weights/landmarks_68_pfld_dy_sim.onnx",sessionOptions=so,providers="tensorrt")
 rectangles_batch, probes_batch=detector.predict([img]*batch_size)
 landmarks = lm_extractor.predict(img, rectangles_batch[-1])
 
@@ -43,8 +43,8 @@ for _ in tqdm(range(100)):
     landmarks = lm_extractor.predict(img, rectangles_batch[-1])
 t_e=time.time()
 time_batch_lm=(t_e-t_s)/100
-time_frame_lm=time_batch_lm
-time_face_lm=time_frame_lm/n_faces
+# time_frame_lm=time_batch_lm/batch_size
+time_face_lm=time_batch_lm/n_faces
 
 landmarks = lm_extractor.predict(img, rectangles_batch[-1])
 
@@ -66,5 +66,5 @@ cv2.imwrite(name, img)
 print('Time face detect cost for batchsize {}, {} faces:{:6f}  \nper frame : {:6f}\nFPS:{:2f}\nFaces per sec: {}\n'.format(\
     batch_size, n_faces, time_batch_det, time_frame_det, 1/time_frame_det, 1/time_face_det))
 
-print('Time face landmark alignment cost for {} faces\nper batch : {:6f}\nFPS:{:2f}\nFaces per sec: {}\n'.format(\
-    n_faces,time_batch_lm, 1/time_frame_lm,1/time_face_lm))
+print('Time face landmark alignment cost for {} faces\nper batch : {:6f}\nFaces per sec: {}\n'.format(\
+    n_faces,time_batch_lm, 1/time_face_lm))

@@ -10,7 +10,7 @@ class BaseNet():
         "tensorrt":(
             'TensorrtExecutionProvider', {
             'device_id': 0,
-            'trt_fp16_enable': False,
+            'trt_fp16_enable': True,
             'trt_max_workspace_size': 2147483648*4}
             )
             ,

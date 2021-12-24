@@ -4,3 +4,6 @@ __pycache__
 datas/celebrity_images
 arc_mbv2_ccrop_sim.onnx
 arc_res50_ccrop_sim.onnx
+yolox_m_sim.onnx
+yolox_s_sim.onnx
+yolox_tiny_sim.onnx

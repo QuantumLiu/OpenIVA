@@ -19,7 +19,7 @@ so.graph_optimization_level = onnxruntime.GraphOptimizationLevel.ORT_DISABLE_ALL
 
 detector=Detector("weights/face_detector_640_dy_sim.onnx",providers="cuda",sessionOptions=so,input_size=(640,480),top_k=16)
 lm_extractor=LandmarksExtractor("weights/landmarks_68_pfld_dy_sim.onnx",sessionOptions=so,providers="cuda")
-arcface=ArcFace("weights/arc_mbv2_ccrop_sim.onnx",sessionOptions=so,providers="cuda")
+arcface=ArcFace("weights/arc_mbv2_ccrop_sim.onnx",sessionOptions=so,providers="tensorrt")
 
 
 dir_info="datas/imgs_celebrity/姜文_1021999_m"

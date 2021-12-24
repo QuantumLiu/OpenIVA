@@ -20,48 +20,101 @@ OpenIVA implements varied mainstream facial recognition, object detection, segme
 
 ![alt Sample Face landmark](datas/imgs_results/vis_landmark.jpg)
 ![alt Sample Face recognition](datas/imgs_results/vis_recog.jpg)
+![alt Sample YOLOX](datas/imgs_results/dog.jpg)
 
 # Performance benchmark
 ## Testing environments 
 - i5-10400 6c12t
 - RTX3060  
 - Ubuntu18.04
-- CUDA11.1
+- CUDA 11.1
 - TensorRT-7.2.3.4
 - onnxruntime with EPs:
   - CPU(Default)
-  - CUDA(Compiled)
-  - OpenVINO(Compiled)
-  - TensorRT(Compiled)
+  - CUDA(Manually Compiled)
+  - OpenVINO(Manually Compiled)
+  - TensorRT(Manually Compiled)
 
 ## Performance
 ### Facial recognition
 Run  
 `python test_landmark.py`  
-`batchsize=8`, 67 faces in the image
-- Face detection(faces per sec)  
+`batchsize=8`, `top_k=68`, 67 faces in the image
+- Face detection  
   Model `face_detector_640_dy_sim`
-  - CPU :  2075
-  - OpenVINO : 5374
-  - CUDA : 6972
-  - TensorRT(FP32) : 7948
-  - TensorRT(FP16) : 8527
+  |onnxruntime EPs| FPS | faces per sec|
+  |  ----  | ----  | ----  |
+  | CPU | 32 | 2075 |
+  | OpenVINO | 81 | 5374 |
+  | CUDA | 105 | 7074 |
+  | TensorRT(FP32) | 124 | 7948 |
+  | TensorRT(FP16) | 128 | 8527 |
 
-- Face landmark (faces per sec)  
+
+- Face landmark   
   Model `landmarks_68_pfld_dy_sim`
-  - CPU : 69
-  - OpenVINO : 819
-  - CUDA : 2061
-  - TensorRT(FP32) : 2639
-  - TensorRT(FP16) : 3131 
+  |onnxruntime EPs |  faces per sec|
+  |  ----  | ----  |
+  | CPU | 69 |
+  | OpenVINO | 890 |
+  | CUDA | 2061 |
+  | TensorRT(FP32) | 2639 |
+  | TensorRT(FP16) | 3131 |
 
-- Face embedding (faces per sec)  
+Run  
+`python test_face.py`  
+`batchsize=8`  
+- Face embedding   
   Model `arc_mbv2_ccrop_sim`
-  - CPU : 212
-  - OpenVINO : 865
-  - CUDA : 1679
-  - TensorRT(FP32) : 2132
-  - TensorRT(FP16) : 2744 
+
+  |onnxruntime EPs |  faces per sec|
+  |  ----  | ----  |
+  | CPU | 212 |
+  | OpenVINO | 865 |
+  | CUDA | 1790 |
+  | TensorRT(FP32) | 2132 |
+  | TensorRT(FP16) | 2812 |
+
+### Objects detection
+Run  
+`python test_yolo.py`  
+`batchsize=8`  , 4 objects in the image  
+- YOLOX objects detect  
+  Model `yolox_s(ms_coco)`
+  |onnxruntime EPs| FPS | Objects per sec|
+  |  ----  | ----  | ----  |
+  | CPU | 9.3 | 37.2 |
+  | OpenVINO | 13 | 52 |
+  | CUDA | 77 | 307 |
+  | TensorRT(FP32) | 95 | 380 |
+  | TensorRT(FP16) | 128 | 512 |
+
+  Model `yolox_m(ms_coco)`
+  |onnxruntime EPs| FPS | Objects per sec|
+  |  ----  | ----  | ----  |
+  | CPU | 4 | 16 |
+  | OpenVINO | 5.5 | 22 |
+  | CUDA | 46.8 | 187 |
+  | TensorRT(FP32) | 64 | 259 |
+  | TensorRT(FP16) | 119 | 478 | 
+
+  Model `yolox_nano(ms_coco)`
+  |onnxruntime EPs| FPS | Objects per sec|
+  |  ----  | ----  | ----  |
+  | CPU | 47 | 188 |
+  | OpenVINO | 80 | 320 |
+  | CUDA | 210 | 842 |
+  | TensorRT(FP32) | 244 | 977 |
+  | TensorRT(FP16) | 269 | 1079 |
+
+  Model `yolox_tiny(ms_coco)`
+  |onnxruntime EPs| FPS | Objects per sec|
+  |  ----  | ----  | ----  |
+  | CPU | 33 | 133 |
+  | OpenVINO | 43 | 175 |
+  | CUDA | 209 | 839 |
+  | TensorRT(FP32) | 248 | 995 |
+  | TensorRT(FP16) | 327 | 1310 |
 
 # Progress  
 - [ ] Multi inference backends
@@ -88,8 +141,8 @@ Run
 
       - [x] Face embedding
     
-    - [ ] Object detection
-      - [ ] YOLOX
+    - [x] Object detection
+      - [x] YOLOX
     - [ ] Semantic/Instance segmentation
 
     - [ ] Scene classification

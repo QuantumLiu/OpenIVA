@@ -1,7 +1,10 @@
 __pycache__
 *.lprof
 *.pyc
+*.json
+*.h5
 datas/celebrity_images
+datas/databases
 arc_mbv2_ccrop_sim.onnx
 arc_res50_ccrop_sim.onnx
 yolox_m_sim.onnx

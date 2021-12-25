@@ -1,5 +1,8 @@
 English | [中文](README_zh.md)
 # OpenIVA
+![alt OpenIVA](logos/openiva.png)
+<center class="half"> <img src="logos/腾龙LOGOSLIDE.png" width="200"/><img src="logos/启智.png" width="200"/></center>  
+
 OpenIVA is an end-to-end intelligent video analytics development toolkit based on different inference backends, designed to help individual users and start-ups quickly launch their own video AI services.  
 OpenIVA implements varied mainstream facial recognition, object detection, segmentation and landmark detection algorithms. And it provides an efficient and lightweight service deployment framework with a modular design. Users only need to replace the algorithm model used for their own tasks.
 # Features

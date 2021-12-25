@@ -1,5 +1,8 @@
 [English](README.md) | 中文
 # OpenIVA
+![alt OpenIVA](logos/openiva.png)
+<center class="half"> <img src="logos/腾龙LOGOSLIDE.png" width="200"/><img src="logos/启智.png" width="200"/></center>  
+
 OpenIVA 是一个端到端的基于多推理后端的智能视频分析开发套件，旨在帮助个人用户和初创企业快速启动自己的视频AI服务。  
 OpenIVA实现了各种主流的面部识别、目标检测、分割和关键点检测算法。并且提供了高效的轻量级服务部署框架，采用模块化设计，用户只需要替换用于自己任务的算法模型。
 # 特色

@@ -77,22 +77,28 @@ def _parse_result(sizes_batch, boxes_batch, confidences_batch, prob_threshold, i
     for boxes, confidences,(height,width) in zip(boxes_batch,confidences_batch,sizes_batch):
         picked_box_probs = []
         
-        for class_index in range(1, confidences.shape[1]):
-            probs = confidences[:, class_index]
-            mask = probs > prob_threshold
-            probs = probs[mask]
-            
-            if probs.shape[0] == 0:
-                continue
-            subset_boxes = boxes[mask, :]
-            box_probs = np.concatenate([subset_boxes, probs.reshape(-1, 1)], axis=1)
-            box_probs = __hard_nms(box_probs,
-            iou_threshold=iou_threshold,
-            top_k=top_k,
-            )
-            picked_box_probs.append(box_probs)
+        probs = confidences[:, 1]
+        mask = probs > prob_threshold
+        probs = probs[mask]
+        
+        if len(probs) == 0:
+            picked_box_batch.append(np.array([]))
+            picked_probs_batch.append(np.array([]))
+            continue
+
+        subset_boxes = boxes[mask, :]
+        box_probs = np.concatenate([subset_boxes, probs.reshape(-1, 1)], axis=1)
+        box_probs = __hard_nms(box_probs,
+        iou_threshold=iou_threshold,
+        top_k=top_k,
+        )
+        picked_box_probs.append(box_probs)
+
         if not picked_box_probs:
-            return np.array([]), np.array([]), np.array([])
+            picked_box_batch.append(np.array([]))
+            picked_probs_batch.append(np.array([]))
+            continue
+
         picked_box_probs = np.concatenate(picked_box_probs)
         picked_box_probs[:, 0] *= width
         picked_box_probs[:, 1] *= height
@@ -101,6 +107,7 @@ def _parse_result(sizes_batch, boxes_batch, confidences_batch, prob_threshold, i
         
         picked_box_batch.append(ToBoxN(picked_box_probs[:, :4].astype(np.int32)))
         picked_probs_batch.append(picked_box_probs[:, 4])
+
     return picked_box_batch,picked_probs_batch
 
 def __area_of(left_top, right_bottom):

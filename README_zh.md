@@ -7,12 +7,12 @@
 <p float="left">
 
 
-<a href="https://deepreinforcementlearningbook.org" target="\_blank">
+<a href="https://github.com/tensorlayer/TensorLayerX" target="\_blank">
   <img src="logos/腾龙LOGOSLIDE.png" width="200" />
  </a> 
 
 
-<a href="http://www.broadview.com.cn/book/5059">
+<a href="https://www.openi.org.cn/">
   <img src="logos/启智.png" width="174" /> 
 </a>
 

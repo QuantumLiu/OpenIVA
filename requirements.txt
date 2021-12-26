@@ -1,0 +1,7 @@
+tqdm
+numpy
+opencv-python
+opencv_contrib-python
+pillow
+h5py==2.10.0
+onnxruntime-gpu==1.8

@@ -4,6 +4,7 @@ __pycache__
 *.json
 *.h5
 datas/celebrity_images
+datas/videos_test
 datas/databases
 arc_mbv2_ccrop_sim.onnx
 arc_res50_ccrop_sim.onnx

@@ -147,8 +147,13 @@ OpenIVA实现了各种主流的面部识别、目标检测、分割和关键点�
         - [x] OpenVINO
     - [ ] TensorlayerX
     - [ ] TensorRT
+  
 - [ ] 异步 & 多线程
-    - [x] prototype
+    - [x] 数据生成线程
+    - [ ] AI计算线程
+    - [ ] 多元功能线程
+    - [ ] 收集线程
+
 
 - [ ] 轻量级服务
     - [x] prototype
@@ -156,17 +161,25 @@ OpenIVA实现了各种主流的面部识别、目标检测、分割和关键点�
 - [ ] 图形界面的可视化工具
 
 - [ ] 常用主流算法
-    - [x] Face detection
+    - [x] 人脸检测
 
-    - [x] Face landmark
+    - [x] 人脸关键点
 
-    - [x] Face embedding
+    - [x] 人脸特征
         - [ ] prototype
     
-    - [ ] Object detection
+    - [ ] 物体检测
       - [ ] YOLOX
-    - [ ] Semantic/Instance segmentation
+    - [ ] 语义/实例分割
 
-    - [ ] Scene classification
+    - [ ] 场景识别
         - [x] prototype
 
+- [ ] 数据I/O
+  - [ ] 视频解码
+    - [ ] OpenCV解码
+      - [x] 本地视频
+      - [ ] 网络流视频
+  - [ ] 数据管理
+    - [x] 人脸身份数据库
+    - [x] 数据序列化

@@ -148,7 +148,10 @@ Run
     - [ ] TensorlayerX
     - [ ] TensorRT
 - [ ] Asynchronous & multithreading
-    - [x] prototype
+    - [x] Data generate threads
+    - [ ] AI compute threads
+    - [ ] Multifunctional threads
+    - [ ] Collecting threads
 
 - [ ] Lightweight service
     - [x] prototype
@@ -169,3 +172,12 @@ Run
 
     - [ ] Scene classification
         - [x] prototype
+
+- [ ] Data I/O
+  - [ ] Video decoding
+    - [ ] OpenCV decoding
+      - [x] Local video files
+      - [ ] Network stream videos
+  - [ ] Data management
+    - [x] Facial identity database
+    - [x] Data serialization

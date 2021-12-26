@@ -4,6 +4,10 @@ from queue import Queue
 import cv2
 
 from commons.vidcoding import decode_video_batch_local
+
+nb_ths=4
+nb_tasks=6
+
 q_task=Queue(100)
 q_compute=Queue(100)
 
@@ -15,14 +19,19 @@ model_configs={"test":{"key_data":"test","func_pre_proc":prepro_func,"keys_prepr
 data_gen_keys=["video_path"]
 data_gen_kwargs={"skip":1,}
 
-th_data=ThreadDATA(q_task,q_compute,decode_video_batch_local,model_configs,8,data_gen_keys,data_gen_kwargs)
-th_data.start()
+ths_data=[ThreadDATA(q_task,q_compute,decode_video_batch_local,model_configs,8,data_gen_keys,data_gen_kwargs) for _ in range(nb_ths)]
+for th_data in ths_data:
+    th_data.start()
 
-q_task.put({"video_path":"datas/videos_test/dmkj_clip.mp4","task_id":1})
+for task_id in range(nb_tasks):
+    print("Putting task: {}".format(task_id))
+    q_task.put({"video_path":"datas/videos_test/dmkj_clip.mp4","task_id":task_id})
 
-data_batch=q_compute.get()
-while not data_batch["flag_end"]:
+nb_done=0
+while nb_done<nb_tasks:
     data_batch=q_compute.get()
+    nb_done+=int(data_batch["flag_end"])
 
-th_data.stop()
+for th_data in ths_data:
+    th_data.stop()
 quit()

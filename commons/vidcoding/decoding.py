@@ -5,8 +5,7 @@ from tqdm import tqdm
 
 from .info import get_video_info
 
-def decode_video_batch_local(video_path,batch_size:int = 8,skip:int = 1):
-        print(video_path)
+def decode_video_batch_local(video_path:str,batch_size:int = 8,skip:int = 1):
         info_dict=get_video_info(video_path)
         
         cap=cv2.VideoCapture(video_path)

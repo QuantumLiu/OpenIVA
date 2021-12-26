@@ -6,6 +6,16 @@ from tqdm import tqdm
 from .info import get_video_info
 
 def decode_video_batch_local(video_path:str,batch_size:int = 8,skip:int = 1):
+        '''
+        Data generator for decoding local videos and produce batch data.
+        :returns
+            yield batch data dictionary like:
+            {'batch_frames':[np.ndarray,...np.ndarray],
+            'batch_indecies':[1,2,3,...],
+            'src_size':(h,w),
+            'flag_start':bool,
+            'flag_end':bool,'real_len':int}
+        '''
         info_dict=get_video_info(video_path)
         
         cap=cv2.VideoCapture(video_path)
@@ -71,7 +81,7 @@ def decode_video_batch_local(video_path:str,batch_size:int = 8,skip:int = 1):
                     batch_frames.append(empty_frame)
                     batch_indecies.append(i_frame-1)
             #print('putting')
-            q_dict_out['src_size']=out.shape[:2]
+            q_dict_out['height'],q_dict_out['width']=out.shape[:2]
             q_dict_out['batch_frames']=batch_frames
             q_dict_out['batch_indecies']=batch_indecies
             yield q_dict_out

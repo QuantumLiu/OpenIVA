@@ -29,7 +29,6 @@ class Detector(BaseNet):
         return rectangles_batch, probes_batch
 
 
-    # @profile
     def predict(self,data):
         if isinstance(data,np.ndarray):
             if len(data.shape)==3:

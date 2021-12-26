@@ -1,4 +1,4 @@
-from threads import ThreadDATA
+from workers import ThreadDATA
 from queue import Queue
 
 import cv2
@@ -11,11 +11,11 @@ nb_tasks=6
 q_task=Queue(100)
 q_compute=Queue(100)
 
-def prepro_func(data,src_size):
-    data=cv2.resize(data,(400,400))
+def prepro_func(data,w,h):
+    data=cv2.resize(data,(640,640))
     return data/255
 
-model_configs={"test":{"key_data":"test","func_pre_proc":prepro_func,"keys_prepro":["src_size"],}}
+model_configs={"test":{"key_data":"test","func_pre_proc":prepro_func,"keys_prepro":["w","h"],}}
 data_gen_keys=["video_path"]
 data_gen_kwargs={"skip":1,}
 

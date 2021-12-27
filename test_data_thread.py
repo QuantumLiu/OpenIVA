@@ -25,7 +25,7 @@ for th_data in ths_data:
 
 for task_id in range(nb_tasks):
     print("Putting task: {}".format(task_id))
-    q_task.put({"video_path":"datas/videos_test/dmkj_clip.mp4","task_id":task_id})
+    q_task.put({"video_path":"datas/videos_test/inception_clip.mp4","task_id":task_id})
 
 nb_done=0
 while nb_done<nb_tasks:

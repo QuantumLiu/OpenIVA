@@ -1,4 +1,5 @@
 tqdm
+requests
 numpy
 opencv-python
 opencv_contrib-python

@@ -61,7 +61,6 @@ def decode_video_batch_local(video_path:str,batch_size:int = 8,skip:int = 1):
                 flag,frame=cap.read()
                 i_frame+=1
                 if i_frame>i_sample:
-                    #print(i_frame)
                     if not frame is None:
                         out=frame#cv2.resize(frame,(224,224))
                     else:
@@ -74,7 +73,6 @@ def decode_video_batch_local(video_path:str,batch_size:int = 8,skip:int = 1):
                     break
          
         q_dict_out['flag_end']=True
-        # q_dict_out['info_form']=q_dict_task['info_form']
 
         #padding to max batch size
         if q_dict_out['real_len'] :
@@ -83,7 +81,6 @@ def decode_video_batch_local(video_path:str,batch_size:int = 8,skip:int = 1):
                 for _ in range(batch_size-q_dict_out['real_len']):
                     batch_frames.append(empty_frame)
                     batch_indecies.append(i_frame-1)
-            #print('putting')
             q_dict_out['src_size']=frame.shape[:2][::-1]
             q_dict_out['height'],q_dict_out['width']=out.shape[:2]
             q_dict_out['batch_frames']=batch_frames

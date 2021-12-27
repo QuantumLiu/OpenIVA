@@ -6,13 +6,39 @@ import traceback
 import time
 import uuid
 
-from commons.vidcoding import decode_video_batch_local
+from commons.videocoding import decode_video_batch_local
 
 class ThreadDATA(Thread):
     def __init__(self,q_task:Queue,q_compute:Queue,\
                 model_configs:dict,\
                 data_gen_func,batch_size:int,\
                 data_gen_keys:list,data_gen_kwargs:dict):
+        '''
+            Basic class for data loading and processing threads. 
+            Waiting for the tasks in a loop from input `Queue`, read data via a `generator`, and process them by multiple pre-processing functions of models,
+        finally put processed batch datas in output `Queue`.
+            Functional programming, arguments of data generator and processing are defined and passed by `kwargs`.
+        You can just write your own data generator for loading different types of data, and pass it as an argument.
+        args:
+            @param q_task: Queue, 
+                the Thread loop and try to get task(dictionary) from it.
+            @param q_compute: Queue, 
+                the queue connected to the computing Thread, put result datas(dictionary) in it.
+            @param model_configs: dict, 
+                functional programming interface, configure pre-processing functions for each model and parameters keys,
+                         for example:
+                            {"yolo":{"key_data":"yolo","func_pre_proc":=func_yolo,"keys_prepro":["width","height"]},
+                            "resnet50":{"key_data":"resnet50","func_pre_proc":fun_resnet}}
+                        In which `func_yolo` and `fun_resnet` are two functions
+            @param data_gen_func: function, 
+                to start a data generator
+            @param batch_size: int, 
+                argument of `data_gen_func`
+            @param data_gen_keys: list, 
+                a list of string, parameters keys of `data_gen_func`
+            @param data_gen_kwargs: dict, 
+                arguments of `data_gen_func`
+        '''
         super().__init__()
         self._stop_event = Event()
 
@@ -27,6 +53,9 @@ class ThreadDATA(Thread):
         self._data_gen_func=data_gen_func
 
     def stop(self):
+        '''
+        Stop the thread
+        '''
         self._stop_event.set()
 
     @property

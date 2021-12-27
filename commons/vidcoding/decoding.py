@@ -13,6 +13,8 @@ def decode_video_batch_local(video_path:str,batch_size:int = 8,skip:int = 1):
             {'batch_frames':[np.ndarray,...np.ndarray],
             'batch_indecies':[1,2,3,...],
             'src_size':(h,w),
+            'height':int
+            'width': int
             'flag_start':bool,
             'flag_end':bool,'real_len':int}
         '''
@@ -41,7 +43,8 @@ def decode_video_batch_local(video_path:str,batch_size:int = 8,skip:int = 1):
             if len(batch_frames)==batch_size:
                 #print('putting')
 
-                q_dict_out['src_size']=frame.shape[:2]
+                q_dict_out['src_size']=frame.shape[:2][::-1]
+                q_dict_out['height'],q_dict_out['width']=out.shape[:2]
                 q_dict_out['batch_frames']=batch_frames
                 q_dict_out['batch_indecies']=batch_indecies
 
@@ -81,6 +84,7 @@ def decode_video_batch_local(video_path:str,batch_size:int = 8,skip:int = 1):
                     batch_frames.append(empty_frame)
                     batch_indecies.append(i_frame-1)
             #print('putting')
+            q_dict_out['src_size']=frame.shape[:2][::-1]
             q_dict_out['height'],q_dict_out['width']=out.shape[:2]
             q_dict_out['batch_frames']=batch_frames
             q_dict_out['batch_indecies']=batch_indecies

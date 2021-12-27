@@ -6,9 +6,13 @@ import traceback
 import time
 import uuid
 
+from commons.vidcoding import decode_video_batch_local
 
 class ThreadDATA(Thread):
-    def __init__(self,q_task:Queue,q_compute:Queue,data_gen_func,model_configs:dict,batch_size:int,data_gen_keys:list,data_gen_kwargs:dict):
+    def __init__(self,q_task:Queue,q_compute:Queue,\
+                model_configs:dict,\
+                data_gen_func,batch_size:int,\
+                data_gen_keys:list,data_gen_kwargs:dict):
         super().__init__()
         self._stop_event = Event()
 
@@ -75,3 +79,12 @@ class ThreadDATA(Thread):
                 continue
 
 
+class ThreadVideoLocal(ThreadDATA):
+    def __init__(self, q_task: Queue, q_compute: Queue, model_configs: dict, batch_size: int =8, skip :int =1):
+        data_gen_keys=["video_path","skip"]
+        data_gen_kwargs={"batch_size":batch_size,"skip":skip}
+        super().__init__(q_task, q_compute, model_configs, decode_video_batch_local, batch_size, data_gen_keys, data_gen_kwargs)
+
+class ThreadImgsLocal(ThreadDATA):
+    def __init__(self, q_task: Queue, q_compute: Queue, model_configs: dict, data_gen_func, batch_size: int, data_gen_keys: list, data_gen_kwargs: dict):
+        super().__init__(q_task, q_compute, model_configs, data_gen_func, batch_size, data_gen_keys, data_gen_kwargs)

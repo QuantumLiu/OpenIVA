@@ -3,7 +3,7 @@ from queue import Queue
 
 import cv2
 
-from commons.vidcoding import decode_video_batch_local
+from commons.videocoding import decode_video_batch_local
 
 nb_ths=4
 nb_tasks=6
@@ -30,8 +30,9 @@ for task_id in range(nb_tasks):
 nb_done=0
 while nb_done<nb_tasks:
     data_batch=q_compute.get()
-    nb_done+=int(data_batch["flag_end"])
+    if data_batch["flag_end"]:
+        nb_done+=int(data_batch["flag_end"])
 
 for th_data in ths_data:
     th_data.stop()
-quit()
+# quit()

@@ -3,6 +3,7 @@ __pycache__
 *.pyc
 *.json
 *.h5
+datas/fonts/SourceHanSansHWSC-Regular.otf
 datas/celebrity_images
 datas/videos_test
 datas/databases

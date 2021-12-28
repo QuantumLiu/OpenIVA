@@ -7,12 +7,15 @@ import time
 import uuid
 
 from commons.videocoding import decode_video_batch_local
+from commons.generators import read_images_local
 
 class ThreadDATA(Thread):
     def __init__(self,q_task:Queue,q_compute:Queue,\
                 model_configs:dict,\
                 data_gen_func,batch_size:int,\
-                data_gen_keys:list,data_gen_kwargs:dict):
+                data_gen_keys:list,data_gen_kwargs:dict,\
+                keys_data:list=None,
+                key_batch_data:str="batch_images"):
         '''
             Basic class for data loading and processing threads. 
             Waiting for the tasks in a loop from input `Queue`, read data via a `generator`, and process them by multiple pre-processing functions of models,
@@ -48,7 +51,13 @@ class ThreadDATA(Thread):
         self.data_gen_keys=data_gen_keys
         self.data_gen_kwargs=data_gen_kwargs
 
-        self.keys_data=["src_size","batch_frames","batch_indecies","flag_start","flag_end"]
+        self.keys_data=["batch_images","batch_frames","batch_indecies","batch_src_size","flag_start","flag_end"]
+
+        self.key_batch_data=key_batch_data
+
+        if isinstance(keys_data, (list,tuple)):
+            for k in keys_data:
+                self.keys_data.append(k)
 
         self._data_gen_func=data_gen_func
 
@@ -73,6 +82,7 @@ class ThreadDATA(Thread):
                 except Empty:
                     if self.stopped:
                         return
+                    continue
 
                 # data_gen_kwargs={}
                 data_gen_kwargs=(self.data_gen_kwargs).copy()
@@ -86,16 +96,16 @@ class ThreadDATA(Thread):
                 for data_dict_batch in gen:
                     q_dict_out={'task_id':q_dict_task['task_id']}
 
-                    batch_frames=data_dict_batch["batch_frames"]
+                    batch_data=data_dict_batch[self.key_batch_data]
 
                     for model_name,configs in self.model_configs.items():
-                        prepro_kwargs={k:data_dict_batch.get(k,None) for k in configs["keys_prepro"]}
+                        prepro_kwargs={k:data_dict_batch.get(k,None) for k in configs.get("keys_prepro",[])}
                         prepro_kwargs.update(configs.get("prepro_kwargs",{}))
 
-                        q_dict_out[configs['key_data']]=[configs['func_pre_proc'](frame,**prepro_kwargs) for frame in batch_frames]
+                        q_dict_out[configs['key_data']]=[configs['func_pre_proc'](frame,**prepro_kwargs) for frame in batch_data]
                     
                     for k in self.keys_data:
-                        q_dict_out[k]=data_dict_batch[k]
+                        q_dict_out[k]=data_dict_batch.get(k,None)
                     
                     self.q_compute.put(q_dict_out)
                         
@@ -112,8 +122,11 @@ class ThreadVideoLocal(ThreadDATA):
     def __init__(self, q_task: Queue, q_compute: Queue, model_configs: dict, batch_size: int =8, skip :int =1):
         data_gen_keys=["video_path","skip"]
         data_gen_kwargs={"batch_size":batch_size,"skip":skip}
-        super().__init__(q_task, q_compute, model_configs, decode_video_batch_local, batch_size, data_gen_keys, data_gen_kwargs)
+        super().__init__(q_task, q_compute, model_configs, decode_video_batch_local, batch_size, data_gen_keys, data_gen_kwargs,key_batch_data="batch_frames")
 
 class ThreadImgsLocal(ThreadDATA):
-    def __init__(self, q_task: Queue, q_compute: Queue, model_configs: dict, data_gen_func, batch_size: int, data_gen_keys: list, data_gen_kwargs: dict):
-        super().__init__(q_task, q_compute, model_configs, data_gen_func, batch_size, data_gen_keys, data_gen_kwargs)
+    def __init__(self, q_task: Queue, q_compute: Queue, model_configs: dict, batch_size: int =8,shuffle: bool=False):
+        data_gen_keys=["pathes_imgs","shuffle"]
+        data_gen_kwargs={"batch_size":batch_size,"shuffle":shuffle}
+        super().__init__(q_task, q_compute, model_configs, read_images_local, batch_size, data_gen_keys, data_gen_kwargs,key_batch_data="batch_images")
+

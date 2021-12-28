@@ -12,7 +12,7 @@ def decode_video_batch_local(video_path:str,batch_size:int = 8,skip:int = 1):
             yield batch data dictionary like:
             {'batch_frames':[np.ndarray,...np.ndarray],
             'batch_indecies':[1,2,3,...],
-            'src_size':(h,w),
+            'batch_src_size':[(w,h),(w,h),...,(w,h)],
             'height':int
             'width': int
             'flag_start':bool,
@@ -31,7 +31,10 @@ def decode_video_batch_local(video_path:str,batch_size:int = 8,skip:int = 1):
         
         i_frame=0
         i_sample=0
+        
+        last_i=samples_indecies[-1]
         # n_sample=0
+
         batch_frames=[]
         batch_indecies=[]
 
@@ -43,12 +46,12 @@ def decode_video_batch_local(video_path:str,batch_size:int = 8,skip:int = 1):
             if len(batch_frames)==batch_size:
                 #print('putting')
 
-                q_dict_out['src_size']=frame.shape[:2][::-1]
-                q_dict_out['height'],q_dict_out['width']=out.shape[:2]
+                q_dict_out['batch_src_size']=[frame.shape[:2][::-1] for frame in batch_frames]
+                q_dict_out['height'],q_dict_out['width']=frame.shape[:2]
                 q_dict_out['batch_frames']=batch_frames
                 q_dict_out['batch_indecies']=batch_indecies
 
-                # q_compute.put(q_dict_out)
+                q_dict_out['flag_end']=(i_sample==last_i)
                 yield q_dict_out
 
                 #Flush
@@ -62,14 +65,13 @@ def decode_video_batch_local(video_path:str,batch_size:int = 8,skip:int = 1):
                 i_frame+=1
                 if i_frame>i_sample:
                     if not frame is None:
-                        out=frame#cv2.resize(frame,(224,224))
+                        out=frame
                     else:
                         Warning('Got empty frame {} in file {}'.format(i_frame,video_path))
                         out=empty_frame
                     batch_frames.append(out)
                     batch_indecies.append(i_frame-1)
                     q_dict_out['real_len']+=1
-                    #print('append',i_frame-1)
                     break
          
         q_dict_out['flag_end']=True

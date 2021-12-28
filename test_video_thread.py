@@ -14,7 +14,7 @@ def prepro_func(data,width=None,height=None):
     data=cv2.resize(data,(640,640))
     return data/255
 
-model_configs={"yolo_test":{"key_data":"test","func_pre_proc":prepro_func,"keys_prepro":["width","height"],}}
+model_configs={"yolo_test":{"key_data":"test","func_pre_proc":prepro_func,"prepro_kwargs":{"width":640,"height":640},}}
 data_gen_keys=["video_path"]
 data_gen_kwargs={"skip":1,}
 
@@ -29,8 +29,9 @@ for task_id in range(nb_tasks):
 nb_done=0
 while nb_done<nb_tasks:
     data_batch=q_compute.get()
-    nb_done+=int(data_batch["flag_end"])
+    if data_batch["flag_end"]:
+        nb_done+=int(data_batch["flag_end"])
 
 for th_data in ths_data:
     th_data.stop()
-quit()
+# quit()

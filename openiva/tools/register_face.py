@@ -20,8 +20,7 @@ from openiva.models.arcface.utils import l2_norm,face_distance,sub_feature
 
 from openiva.commons.facial import FacialInfo, FacialDB, parse_filename, remove_old
 
-so = onnxruntime.SessionOptions()
-so.graph_optimization_level = onnxruntime.GraphOptimizationLevel.ORT_DISABLE_ALL
+from openiva.commons.io import imread
 
 
 def worker_dir(path_dir,detector: Detector,lm_extractor: LandmarksExtractor,arcface: ArcFace,over_write=False):
@@ -45,7 +44,7 @@ def worker_dir(path_dir,detector: Detector,lm_extractor: LandmarksExtractor,arcf
                 if path[-4:] in ['flag','json']:
                     continue
                 # print('Working on img:{}'.format(path))
-                img_src=cv2.imread(path)
+                img_src=imread(path)
                 rectangles_batch, probes_batch=detector.predict([img_src])
                 rectangles=rectangles_batch[0]
 
@@ -130,6 +129,9 @@ def register_all(root_dir,out_path,detector: Detector,lm_extractor: LandmarksExt
     return db_dict
 
 if __name__ == "__main__":
+    so = onnxruntime.SessionOptions()
+    so.graph_optimization_level = onnxruntime.GraphOptimizationLevel.ORT_DISABLE_ALL
+    
     detector=Detector("weights/face_detector_640_dy_sim.onnx",providers="cuda",sessionOptions=so,input_size=(640,480),top_k=16)
     lm_extractor=LandmarksExtractor("weights/landmarks_68_pfld_dy_sim.onnx",sessionOptions=so,providers="cuda")
     arcface=ArcFace("weights/arc_mbv2_ccrop_sim.onnx",sessionOptions=so,providers="cuda")

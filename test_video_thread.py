@@ -1,4 +1,4 @@
-from workers import ThreadVideoLocal
+from openiva.workers import ThreadVideoLocal
 from queue import Queue
 
 import cv2

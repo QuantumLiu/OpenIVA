@@ -6,8 +6,8 @@ from tqdm import tqdm
 
 import onnxruntime
 
-from models.detector import Detector
-from models.alignment import LandmarksExtractor
+from openiva.models.detector import Detector
+from openiva.models.alignment import LandmarksExtractor
 
 img=cv2.imread("datas/imgs_test/lumia.jpg")
 
@@ -15,8 +15,8 @@ so = onnxruntime.SessionOptions()
 so.graph_optimization_level = onnxruntime.GraphOptimizationLevel.ORT_DISABLE_ALL
 batch_size=8
 
-detector=Detector("weights/face_detector_640_dy_sim.onnx",providers="tensorrt",sessionOptions=so,input_size=(640,480),top_k=68)
-lm_extractor=LandmarksExtractor("weights/landmarks_68_pfld_dy_sim.onnx",sessionOptions=so,providers="tensorrt")
+detector=Detector("weights/face_detector_640_dy_sim.onnx",providers="cuda",sessionOptions=so,input_size=(640,480),top_k=68)
+lm_extractor=LandmarksExtractor("weights/landmarks_68_pfld_dy_sim.onnx",sessionOptions=so,providers="cuda")
 rectangles_batch, probes_batch=detector.predict([img]*batch_size)
 landmarks = lm_extractor.predict(img, rectangles_batch[-1])
 

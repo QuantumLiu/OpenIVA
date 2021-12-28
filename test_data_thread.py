@@ -1,9 +1,9 @@
-from workers import ThreadDATA
+from openiva.workers import ThreadDATA
 from queue import Queue
 
 import cv2
 
-from commons.videocoding import decode_video_batch_local
+from openiva.commons.videocoding import decode_video_batch_local
 
 nb_ths=4
 nb_tasks=6
@@ -19,7 +19,7 @@ model_configs={"test":{"key_data":"test","func_pre_proc":prepro_func,"keys_prepr
 data_gen_keys=["video_path"]
 data_gen_kwargs={"skip":1,}
 
-ths_data=[ThreadDATA(q_task,q_compute,model_configs,decode_video_batch_local,8,data_gen_keys,data_gen_kwargs) for _ in range(nb_ths)]
+ths_data=[ThreadDATA(q_task,q_compute,model_configs,decode_video_batch_local,8,data_gen_keys,data_gen_kwargs,key_batch_data="batch_frames") for _ in range(nb_ths)]
 for th_data in ths_data:
     th_data.start()
 

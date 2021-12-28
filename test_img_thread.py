@@ -1,8 +1,8 @@
-from commons.generators import read_images_local
-from workers import ThreadImgsLocal
+from openiva.commons.generators import read_images_local
+from openiva.workers import ThreadImgsLocal
 from queue import Queue
 
-from commons.io import get_img_pathes_recursively
+from openiva.commons.io import get_img_pathes_recursively
 
 import cv2
 

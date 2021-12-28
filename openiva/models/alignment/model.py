@@ -1,7 +1,7 @@
 import numpy as np
 import cv2
 
-from models.base import BaseNet
+from openiva.models.base import BaseNet
 
 
 class LandmarksExtractor(BaseNet):

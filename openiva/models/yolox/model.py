@@ -1,7 +1,7 @@
 import numpy as np
 import cv2
 
-from models.base import BaseNet
+from openiva.models.base import BaseNet
 from .utils import multiclass_nms
 
 __all__ = ["YOLOX"]

@@ -1,7 +1,7 @@
 import numpy as np
 import cv2
 
-from models.base import BaseNet
+from openiva.models.base import BaseNet
 
 from .utils import get_transform_mat,warp_img,l2_norm,INDS_68_5,MEAN_PTS_5
 class ArcFace(BaseNet):

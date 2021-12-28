@@ -11,14 +11,14 @@ import h5py
 from tqdm import tqdm
 
 import onnxruntime
-from commons import facial
+from openiva.commons import facial
 
-from models.detector import Detector
-from models.alignment import LandmarksExtractor
-from models.arcface import ArcFace
-from models.arcface.utils import l2_norm,face_distance,sub_feature
+from openiva.models.detector import Detector
+from openiva.models.alignment import LandmarksExtractor
+from openiva.models.arcface import ArcFace
+from openiva.models.arcface.utils import l2_norm,face_distance,sub_feature
 
-from commons.facial import FacialInfo, FacialDB, parse_filename, remove_old
+from openiva.commons.facial import FacialInfo, FacialDB, parse_filename, remove_old
 
 so = onnxruntime.SessionOptions()
 so.graph_optimization_level = onnxruntime.GraphOptimizationLevel.ORT_DISABLE_ALL

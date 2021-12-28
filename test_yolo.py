@@ -6,17 +6,16 @@ import numpy as np
 from tqdm import tqdm
 
 import onnxruntime
-from models import yolox
 
-from models.yolox import YOLOX
-from models.yolox.utils import vis,COCO_CLASSES
+from openiva.models.yolox import YOLOX
+from openiva.models.yolox.utils import vis,COCO_CLASSES
 
 batch_size=8
 
 so = onnxruntime.SessionOptions()
 so.graph_optimization_level = onnxruntime.GraphOptimizationLevel.ORT_DISABLE_ALL
 
-yolo=YOLOX("weights/yolox_nano_sim.onnx",input_size=(416,416),sessionOptions=so,providers="cuda")
+yolo=YOLOX("weights/yolox_m_sim.onnx",input_size=(640,640),sessionOptions=so,providers="cuda")
 
 img=cv2.imread("datas/imgs_test/dog.jpg")
 

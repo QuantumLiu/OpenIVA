@@ -9,15 +9,14 @@ from PIL import ImageDraw,ImageFont
 from tqdm import tqdm
 
 import onnxruntime
-from commons import facial
-from commons.facial.database import FacialDB
 
-from models.detector import Detector
-from models.alignment import LandmarksExtractor
-from models.arcface import ArcFace
-from models.arcface.utils import l2_norm,face_distance,sub_feature
+from openiva.commons.facial.database import FacialDB
 
-from tools.register_face import register_all
+from openiva.models.detector import Detector
+from openiva.models.alignment import LandmarksExtractor
+from openiva.models.arcface import ArcFace
+
+from openiva.tools.register_face import register_all
 
 so = onnxruntime.SessionOptions()
 so.graph_optimization_level = onnxruntime.GraphOptimizationLevel.ORT_DISABLE_ALL

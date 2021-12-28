@@ -1,7 +1,7 @@
 import numpy as np
 import cv2
 
-from models.base import BaseNet
+from openiva.models.base import BaseNet
 
 class Detector(BaseNet):
     def __init__(self, onnx_path, input_size=(640,480), confidenceThreshold = 0.95, nmsThreshold = 0.5, top_k=5, sessionOptions=None,providers="cpu"):

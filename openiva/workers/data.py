@@ -6,8 +6,8 @@ import traceback
 import time
 import uuid
 
-from commons.videocoding import decode_video_batch_local
-from commons.generators import read_images_local
+from openiva.commons.videocoding import decode_video_batch_local
+from openiva.commons.generators import read_images_local
 
 class ThreadDATA(Thread):
     def __init__(self,q_task:Queue,q_compute:Queue,\

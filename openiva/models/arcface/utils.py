@@ -2,7 +2,7 @@
 
 import numpy as np
 
-from commons.facial import get_transform_mat,warp_img,l2_norm,face_distance,sub_feature
+from openiva.commons.facial import get_transform_mat,warp_img,l2_norm,face_distance,sub_feature
 
 MEAN_PTS_5=np.array([[0.34191607, 0.46157411],
        [0.65653392, 0.45983393],

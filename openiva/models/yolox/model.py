@@ -88,6 +88,9 @@ class YOLOX(BaseNet):
         boxes_batch,scores_batch,cls_batch=self.post_process(outputs,ratios_batch,self.input_size,self.with_p6)
 
         return boxes_batch,scores_batch,cls_batch
+
+
+        
 def _demo_postprocess(outputs, img_size, p6=False):
 
     grids = []

@@ -11,10 +11,10 @@ from openiva.commons.generators import read_images_local
 
 class ThreadDATA(Thread):
     def __init__(self,q_task:Queue,q_compute:Queue,\
-                model_configs:dict,\
+                model_configs:tuple,\
                 data_gen_func,batch_size:int,\
                 data_gen_keys:list,data_gen_kwargs:dict,\
-                keys_data:list=None,
+                key_data:list=None,
                 key_batch_data:str="batch_images"):
         '''
             Basic class for data loading and processing threads. 
@@ -27,11 +27,15 @@ class ThreadDATA(Thread):
                 the Thread loop and try to get task(dictionary) from it.
             @param q_compute: Queue, 
                 the queue connected to the computing Thread, put result datas(dictionary) in it.
-            @param model_configs: dict, 
+            @param model_configs: tuple, ModelDataConfig objects
                 functional programming interface, configure pre-processing functions for each model and parameters keys,
                          for example:
-                            {"yolo":{"key_data":"yolo","func_pre_proc":=func_yolo,"keys_prepro":["width","height"]},
-                            "resnet50":{"key_data":"resnet50","func_pre_proc":fun_resnet}}
+                             {'model_name': 'yolo',
+                            'key_data': ('batch_images',),
+                            'func_pre_proc': <function __main__.<func_yolo>(x)>,
+                            'keys_prepro': ('width','height'),
+                            'is_proc_batch': True}
+
                         In which `func_yolo` and `fun_resnet` are two functions
             @param data_gen_func: function, 
                 to start a data generator
@@ -51,13 +55,13 @@ class ThreadDATA(Thread):
         self.data_gen_keys=data_gen_keys
         self.data_gen_kwargs=data_gen_kwargs
 
-        self.keys_data=["batch_images","batch_frames","batch_indecies","batch_src_size","flag_start","flag_end"]
+        self.key_data=["batch_images","batch_frames","batch_indecies","batch_src_size","flag_start","flag_end"]
 
         self.key_batch_data=key_batch_data
 
-        if isinstance(keys_data, (list,tuple)):
-            for k in keys_data:
-                self.keys_data.append(k)
+        if isinstance(key_data, (list,tuple)):
+            for k in key_data:
+                self.key_data.append(k)
 
         self._data_gen_func=data_gen_func
 
@@ -98,13 +102,18 @@ class ThreadDATA(Thread):
 
                     batch_data=data_dict_batch[self.key_batch_data]
 
-                    for model_name,configs in self.model_configs.items():
-                        prepro_kwargs={k:data_dict_batch.get(k,None) for k in configs.get("keys_prepro",[])}
-                        prepro_kwargs.update(configs.get("prepro_kwargs",{}))
+                    for model_config in self.model_configs:
+                        prepro_kwargs={k:data_dict_batch.get(k,None) for k in model_config.keys_prepro}
+                        prepro_kwargs.update(model_config.prepro_kwargs)
 
-                        q_dict_out[configs['key_data']]=[configs['func_pre_proc'](frame,**prepro_kwargs) for frame in batch_data]
+                        # for  key_data in model_config.key_data:
+                        if  model_config.is_proc_batch:
+                            q_dict_out[model_config.key_data]=model_config.func_pre_proc(batch_data,**prepro_kwargs)
+                        else:
+                            q_dict_out[model_config.key_data]=[model_config.func_pre_proc(frame,**prepro_kwargs) for frame in batch_data]
+
                     
-                    for k in self.keys_data:
+                    for k in self.key_data:
                         q_dict_out[k]=data_dict_batch.get(k,None)
                     
                     self.q_compute.put(q_dict_out)
@@ -119,13 +128,13 @@ class ThreadDATA(Thread):
 
 
 class ThreadVideoLocal(ThreadDATA):
-    def __init__(self, q_task: Queue, q_compute: Queue, model_configs: dict, batch_size: int =8, skip :int =1):
+    def __init__(self, q_task: Queue, q_compute: Queue, model_configs: tuple, batch_size: int =8, skip :int =1):
         data_gen_keys=["video_path","skip"]
         data_gen_kwargs={"batch_size":batch_size,"skip":skip}
         super().__init__(q_task, q_compute, model_configs, decode_video_batch_local, batch_size, data_gen_keys, data_gen_kwargs,key_batch_data="batch_frames")
 
 class ThreadImgsLocal(ThreadDATA):
-    def __init__(self, q_task: Queue, q_compute: Queue, model_configs: dict, batch_size: int =8,shuffle: bool=False):
+    def __init__(self, q_task: Queue, q_compute: Queue, model_configs: tuple, batch_size: int =8,shuffle: bool=False):
         data_gen_keys=["pathes_imgs","shuffle"]
         data_gen_kwargs={"batch_size":batch_size,"shuffle":shuffle}
         super().__init__(q_task, q_compute, model_configs, read_images_local, batch_size, data_gen_keys, data_gen_kwargs,key_batch_data="batch_images")

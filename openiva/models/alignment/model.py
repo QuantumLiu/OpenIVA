@@ -3,6 +3,7 @@ import cv2
 
 from openiva.models.base import BaseNet
 
+__all__ = ["LandmarksExtractor"]
 
 class LandmarksExtractor(BaseNet):
 

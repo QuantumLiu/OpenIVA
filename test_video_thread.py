@@ -1,7 +1,9 @@
-from openiva.workers import ThreadVideoLocal
 from queue import Queue
 
+
 import cv2
+from openiva.workers import ThreadVideoLocal
+from openiva.models.config import ModelDataConfig
 
 if __name__ == "__main__":
 
@@ -16,9 +18,8 @@ if __name__ == "__main__":
         data=cv2.resize(data,(640,640))
         return data/255
 
-    model_configs={"yolo_test":{"key_data":"test","func_pre_proc":prepro_func,"prepro_kwargs":{"width":640,"height":640},}}
-    data_gen_keys=["video_path"]
-    data_gen_kwargs={"skip":1,}
+    model_configs=(ModelDataConfig(model_name="yolo_test",key_data="test",func_pre_proc=prepro_func,prepro_kwargs={"width":640,"height":640}),
+                    ModelDataConfig.from_dict({"model_name":"yolo_test2","key_data":"test2","func_pre_proc":prepro_func,"prepro_kwargs":{"width":640,"height":640}}))
 
     ths_data=[ThreadVideoLocal(q_task,q_compute,model_configs,batch_size=8,skip=1) for _ in range(nb_ths)]
     for th_data in ths_data:

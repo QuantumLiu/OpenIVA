@@ -4,6 +4,8 @@ from queue import Queue
 import cv2
 
 from openiva.commons.videocoding import decode_video_batch_local
+from openiva.models.config import ModelDataConfig
+
 
 if __name__ == "__main__":
 
@@ -17,7 +19,8 @@ if __name__ == "__main__":
         data=cv2.resize(data,(640,640))
         return data/255
 
-    model_configs={"test":{"key_data":"test","func_pre_proc":prepro_func,"keys_prepro":["w","h"],}}
+    model_configs=(ModelDataConfig(model_name="yolo_test",key_data="test",func_pre_proc=prepro_func,prepro_kwargs={"w":640,"h":640}),
+                    ModelDataConfig.from_dict({"model_name":"yolo_test2","key_data":"test2","func_pre_proc":prepro_func,"prepro_kwargs":{"w":640,"h":640}}))
     data_gen_keys=["video_path"]
     data_gen_kwargs={"skip":1,}
 

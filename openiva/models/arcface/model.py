@@ -4,6 +4,9 @@ import cv2
 from openiva.models.base import BaseNet
 
 from .utils import get_transform_mat,warp_img,l2_norm,INDS_68_5,MEAN_PTS_5
+
+__all__ = ["LandmarksExtractor"]
+
 class ArcFace(BaseNet):
     def __init__(self, onnx_path, input_size=(112,112),channel_first=False, sessionOptions=None,providers="cpu"):
         super().__init__(onnx_path, sessionOptions=sessionOptions,providers=providers)

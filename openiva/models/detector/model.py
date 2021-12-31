@@ -3,6 +3,8 @@ import cv2
 
 from openiva.models.base import BaseNet
 
+__all__ = ["Detector"]
+
 class Detector(BaseNet):
     def __init__(self, onnx_path, input_size=(640,480), confidenceThreshold = 0.95, nmsThreshold = 0.5, top_k=5, sessionOptions=None,providers="cpu"):
         super().__init__(onnx_path, sessionOptions=sessionOptions,providers=providers)

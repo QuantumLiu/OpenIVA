@@ -16,7 +16,8 @@ class ArcFace(BaseNet):
 
     def predict(self, data,landm=None):
         face_img=self.pre_process(data,landm)
-        outputs=l2_norm(self._infer(face_img)[0])
+        outputs=self._infer(face_img)
+        outputs=self.post_process(outputs)
         return outputs
 
     @staticmethod
@@ -33,4 +34,15 @@ class ArcFace(BaseNet):
 
     @staticmethod
     def post_process(outputs):
-        return super().post_process(outputs)
+        return l2_norm(outputs[0])
+
+    def _pre_proc_frame(self, img,landms):
+        face_imgs=[]
+        if not landms is None and len(landms):
+            for landm in landms:
+                mat=get_transform_mat(landm[INDS_68_5].reshape(5,2),MEAN_PTS_5,112)
+                face_img=warp_img(mat,img,(112,112)).astype(np.float32)/255.0
+                face_imgs.append(face_img)
+        else:
+            face_imgs.append(img.astype(np.float32)/255.0)
+        return np.ascontiguousarray(face_imgs)

@@ -15,49 +15,39 @@ class Detector(BaseNet):
         self.top_k=top_k
         
 
-    @staticmethod
-    def pre_process(data_raw,target_size):
-        data_raw = cv2.resize(data_raw, target_size,interpolation=cv2.INTER_LINEAR)
-        data_raw = cv2.cvtColor(data_raw, cv2.COLOR_BGR2RGB)
-        data_raw=data_raw.astype(np.float32)
-        data_raw=(data_raw-127.)/128.
-        data_infer=np.transpose(data_raw, [2, 0, 1])#[None]
-        return data_infer
-
-    @staticmethod
-    def post_process(outputs, sizes_batch,confidenceThreshold, nmsThreshold, top_k):
-        boxes_batch, confidences_batch=outputs
-        rectangles_batch, probes_batch = _parse_result(sizes_batch, boxes_batch, confidences_batch, confidenceThreshold, nmsThreshold, top_k)
-        return rectangles_batch, probes_batch
-
-
-    def predict(self,data):
-        if isinstance(data,np.ndarray):
-            if len(data.shape)==3:
-                sizes_batch=[data.shape[:2]]
-
-                data_infer=self.pre_process(data, self.input_size)
-                data_infer=data_infer[None]
-                
-            elif len(data)>4:
-                raise ValueError("Got error data dims expect 3 or 4, got {}".format(len(data)))
-
-        elif isinstance(data,list):
-            sizes_batch=[x.shape[:2] for x in data]
-
+    @property
+    def pre_process(self):
+        def f(data_raw):
+            sizes_batch=[]
+            data=self.warp_batch(data_raw)
             data_infer=[]
-            for data_raw in data:
-                data_infer.append(self.pre_process(data_raw, self.input_size))
+            for img_raw in data:
+                img_infer,size=self._pre_proc_frame(img_raw)
+                data_infer.append(img_infer)
+                sizes_batch.append(size)
 
             data_infer=np.ascontiguousarray(data_infer,dtype=np.float32)
-        
-
-        outputs=self._infer(data_infer)
-
-        rectangles_batch, probes_batch=self.post_process(outputs, sizes_batch, self.confidenceThreshold, self.nmsThreshold, self.top_k)
+            sizes_batch=np.asarray(sizes_batch)
+            return {"data_infer":data_infer,"sizes_batch":sizes_batch}
+        return f
 
 
-        return  rectangles_batch, probes_batch
+    def _pre_proc_frame(self, img_raw):
+        img = cv2.resize(img_raw, self.input_size,interpolation=cv2.INTER_LINEAR)
+        img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+        img=img.astype(np.float32)
+        img=(img-127.)/128.
+        img_infer=np.transpose(img, [2, 0, 1])#[None]
+        return img_infer,img_raw.shape[:2]
+
+    @property
+    def post_process(self):
+        def f(outputs, data_infer):
+            sizes_batch=data_infer["sizes_batch"]
+            boxes_batch, confidences_batch=outputs
+            rectangles_batch, probes_batch = _parse_result(sizes_batch, boxes_batch, confidences_batch, self.confidenceThreshold, self.nmsThreshold, self.top_k)
+            return rectangles_batch, probes_batch
+        return f
 
 def _parse_result(sizes_batch, boxes_batch, confidences_batch, prob_threshold, iou_threshold=0.5, top_k=5):
     """

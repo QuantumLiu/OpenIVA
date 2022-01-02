@@ -5,7 +5,7 @@ import cv2
 from openiva.commons.io import get_img_pathes_recursively
 
 from openiva.workers import ThreadImgsLocal
-from openiva.models.config import ModelDataConfig
+from openiva.models.group import ModelDataConfig
 
 
 if __name__ == "__main__":
@@ -21,8 +21,8 @@ if __name__ == "__main__":
         return data/255
 
 
-    model_configs=(ModelDataConfig("yolo_test","test",prepro_func,prepro_kwargs={"width":640,"height":640}),
-                    ModelDataConfig.from_dict({"model_name":"yolo_test2","key_data":"test","func_pre_proc":prepro_func,"prepro_kwargs":{"width":640,"height":640}}))
+    model_configs=(ModelDataConfig("yolo_test",prepro_func,preproc_kwargs={"width":640,"height":640}),
+                    ModelDataConfig.from_dict({"model_name":"yolo_test2","func_preproc":prepro_func,"preproc_kwargs":{"width":640,"height":640}}))
 
     ths_data=[ThreadImgsLocal(q_task,q_compute,model_configs,batch_size=8,shuffle=True) for _ in range(nb_ths)]
     for th_data in ths_data:

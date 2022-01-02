@@ -56,12 +56,14 @@ class BaseNet():
             Net outputs ndarrays
         """
         # print(data_infer.shape)
+        if isinstance(data_infer,dict):
+            data_infer=data_infer.get("data_infer",None)
         outputs=self.__session.run(None, {self.__input_name: data_infer})
 
         return outputs
 
 
-    @staticmethod
+    @property
     def pre_process(data_raw):
         """
         Returns pre-processed ndarray (b,h,w,c).
@@ -72,8 +74,11 @@ class BaseNet():
         """
         pass 
 
-    @staticmethod
-    def post_process(outputs):
+    def _pre_proc_frame(self,img):
+        pass
+    
+    @property
+    def post_process(outputs,data_infer):
         """
         Returns results (b,).
         Args:
@@ -81,22 +86,26 @@ class BaseNet():
         Returns:
             results
         """
+        pass
     
     def predict(self,data):
-        if isinstance(data,np.ndarray):
-            if len(data.shape)==3:
-                data_raw=data[None]
-            elif len(data)>4:
-                raise ValueError("Got error data dims expect 3 or 4, got {}".format(len(data)))
-        elif isinstance(data,list):
-            data_raw=np.ascontiguousarray(data,dtype=np.float32)
-            
-        data_infer=self.pre_process(data_raw)
+
+                    
+        data_infer=self.pre_process(data)
 
         outputs=self._infer(data_infer)
 
-        results=self.post_process(outputs)
+        results=self.post_process(outputs,data_infer)
 
         return results
 
-           
+    @staticmethod
+    def warp_batch(data):
+        if isinstance(data,np.ndarray):
+            if len(data.shape)==3:
+                return data[None]
+            elif len(data.shape)>4:
+                raise ValueError("Got error data dims expect 3 or 4, got {}".format(len(data)))
+        elif isinstance(data,list):
+            return data
+

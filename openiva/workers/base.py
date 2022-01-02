@@ -14,6 +14,3 @@ class StoppableThread(Thread):
     @property
     def stopped(self):
         return self._stop_event.is_set()
-
-from .data import ThreadDATA
-from .data import ThreadImgsLocal,ThreadVideoLocal

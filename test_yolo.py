@@ -15,11 +15,13 @@ batch_size=8
 so = onnxruntime.SessionOptions()
 so.graph_optimization_level = onnxruntime.GraphOptimizationLevel.ORT_DISABLE_ALL
 
-yolo=YOLOX("weights/yolox_m_sim.onnx",input_size=(640,640),sessionOptions=so,providers="cuda")
+yolo=YOLOX("weights/yolox_s_sim.onnx",input_size=(640,640),sessionOptions=so,providers="cuda")
 
 img=cv2.imread("datas/imgs_test/dog.jpg")
 
 
+
+boxes_batch,scores_batch,cls_batch=yolo.predict(img)
 
 print("Warm up\n")
 for _ in tqdm(range(10)):

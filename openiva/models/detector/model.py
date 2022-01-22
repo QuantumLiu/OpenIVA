@@ -15,21 +15,19 @@ class Detector(BaseNet):
         self.top_k=top_k
         
 
-    @property
-    def pre_process(self):
-        def f(data_raw):
-            sizes_batch=[]
-            data=self.warp_batch(data_raw)
-            data_infer=[]
-            for img_raw in data:
-                img_infer,size=self._pre_proc_frame(img_raw)
-                data_infer.append(img_infer)
-                sizes_batch.append(size)
+    def pre_process(self,data):
+        sizes_batch=[]
+        data_raw=data["batch_images"]
+        data_batch=self.warp_batch(data_raw)
+        data_infer=[]
+        for img_raw in data_batch:
+            img_infer,size=self._pre_proc_frame(img_raw)
+            data_infer.append(img_infer)
+            sizes_batch.append(size)
 
-            data_infer=np.ascontiguousarray(data_infer,dtype=np.float32)
-            sizes_batch=np.asarray(sizes_batch)
-            return {"data_infer":data_infer,"sizes_batch":sizes_batch}
-        return f
+        data_infer=np.ascontiguousarray(data_infer,dtype=np.float32)
+        sizes_batch=np.asarray(sizes_batch)
+        return {"data_infer":data_infer,"sizes_batch":sizes_batch}
 
 
     def _pre_proc_frame(self, img_raw):
@@ -40,14 +38,11 @@ class Detector(BaseNet):
         img_infer=np.transpose(img, [2, 0, 1])#[None]
         return img_infer,img_raw.shape[:2]
 
-    @property
-    def post_process(self):
-        def f(outputs, data_infer):
-            sizes_batch=data_infer["sizes_batch"]
-            boxes_batch, confidences_batch=outputs
-            rectangles_batch, probes_batch = _parse_result(sizes_batch, boxes_batch, confidences_batch, self.confidenceThreshold, self.nmsThreshold, self.top_k)
-            return rectangles_batch, probes_batch
-        return f
+    def post_process(self,data):
+        sizes_batch=data["sizes_batch"]
+        boxes_batch, confidences_batch=data["outputs"]
+        rectangles_batch, probes_batch = _parse_result(sizes_batch, boxes_batch, confidences_batch, self.confidenceThreshold, self.nmsThreshold, self.top_k)
+        return rectangles_batch, probes_batch
 
 def _parse_result(sizes_batch, boxes_batch, confidences_batch, prob_threshold, iou_threshold=0.5, top_k=5):
     """

@@ -9,6 +9,10 @@ import uuid
 from openiva.commons.videocoding import decode_video_batch_local
 from openiva.commons.generators import read_images_local
 
+class TaskDATA(object):
+    def __init__(self,task_id) -> None:
+        super().__init__()
+
 class ThreadProc(StoppableThread):
     def __init__(self,q_task:Queue,q_compute:Queue,\
                 model_configs:tuple,\

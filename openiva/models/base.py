@@ -46,8 +46,8 @@ class BaseNet():
         self.__input_name = self.__session.get_inputs()[0].name
         self.__session.set_providers(providers=[self.provider])
         print("Using {} external provider".format(self.__session.get_providers()[0]))
-    
-    def _infer(self, data_infer):
+
+    def _infer(self, data:dict):
         """
         Returns onnx inference outputs.
         Args:
@@ -55,16 +55,18 @@ class BaseNet():
         Returns:
             Net outputs ndarrays
         """
-        # print(data_infer.shape)
-        if isinstance(data_infer,dict):
-            data_infer=data_infer.get("data_infer",None)
+        if isinstance(data,dict):
+            data_infer=data["data_infer"]
+        elif isinstance(data,np.ndarray):
+            data_infer=data
         outputs=self.__session.run(None, {self.__input_name: data_infer})
 
         return outputs
 
 
-    @property
-    def pre_process(data_raw):
+
+
+    def pre_process(self,data:dict):
         """
         Returns pre-processed ndarray (b,h,w,c).
         Args:
@@ -77,8 +79,7 @@ class BaseNet():
     def _pre_proc_frame(self,img):
         pass
     
-    @property
-    def post_process(outputs,data_infer):
+    def post_process(self,data:dict):
         """
         Returns results (b,).
         Args:
@@ -88,16 +89,45 @@ class BaseNet():
         """
         pass
     
-    def predict(self,data):
+    def predict(self,data:dict):
 
-                    
+        if not isinstance(data,dict):
+            data_dict={}
+            data_dict["batch_images"]=data
+            data=data_dict
+
         data_infer=self.pre_process(data)
+        if isinstance(data_infer,dict):
+            data.update(data_infer)
+        else:
+            data["data_infer"]=data_infer
 
-        outputs=self._infer(data_infer)
+        outputs=self._infer(data)
+        if isinstance(outputs,dict):
+            data.update(outputs)
+        else:
+            data["outputs"]=outputs
 
-        results=self.post_process(outputs,data_infer)
+        results=self.post_process(data)
+        if isinstance(results,dict):
+            data.update(results)
+        else:
+            data["results"]=results
 
         return results
+
+    @property
+    def func_pre_process(self):
+        def func_pre_process(data):
+            return self.pre_process(data)
+        return func_pre_process
+
+    @property
+    def func_post_process(self):
+        def func_post_process(data):
+            return self.pre_process(data)
+        return func_post_process
+
 
     @staticmethod
     def warp_batch(data):

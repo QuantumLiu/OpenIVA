@@ -12,53 +12,50 @@ class YOLOX(BaseNet):
         self.input_size=input_size
         self.with_p6=with_p6
 
-    @property
-    def pre_process(self):
-        def f(data):
-            ratios_batch=[]
-            data=self.warp_batch(data)
-            data_infer=[]
-            for img in data:
-                img_padded,ratio=self._pre_proc_frame(img)
-                data_infer.append(img_padded)
-                ratios_batch.append(ratio)
+    def pre_process(self,data):
+        ratios_batch=[]
+        data_raw=data["batch_images"]
+        data_batch=self.warp_batch(data_raw)
+        data_infer=[]
+        for img in data_batch:
+            img_padded,ratio=self._pre_proc_frame(img)
+            data_infer.append(img_padded)
+            ratios_batch.append(ratio)
 
-            data_infer=np.ascontiguousarray(data_infer,dtype=np.float32)
-            ratios_batch=np.asarray(ratios_batch)
-            return {"data_infer":data_infer,"ratios_batch":ratios_batch}
-        return f
+        data_infer=np.ascontiguousarray(data_infer,dtype=np.float32)
+        ratios_batch=np.asarray(ratios_batch)
+        return {"data_infer":data_infer,"ratios_batch":ratios_batch}
     
     
-    @property
-    def post_process(self):
-        def f(outputs,data_infer):
+    def post_process(self,data):
 
-            ratios_batch=data_infer["ratios_batch"]
+        ratios_batch=data['ratios_batch']
+        outputs=data["outputs"]
 
-            predictions = _demo_postprocess(outputs[0], self.input_size, p6=self.with_p6)
-            boxes = predictions[..., :4]
-            scores = predictions[..., 4:5] * predictions[..., 5:]
+        predictions = _demo_postprocess(outputs[0], self.input_size, p6=self.with_p6)
+        boxes = predictions[..., :4]
+        scores = predictions[..., 4:5] * predictions[..., 5:]
 
-            boxes_xyxy = np.ones_like(boxes)
-            boxes_xyxy[..., 0] = boxes[..., 0] - boxes[..., 2]/2.
-            boxes_xyxy[..., 1] = boxes[..., 1] - boxes[..., 3]/2.
-            boxes_xyxy[..., 2] = boxes[..., 0] + boxes[..., 2]/2.
-            boxes_xyxy[..., 3] = boxes[..., 1] + boxes[..., 3]/2.
-            boxes_xyxy /= ratios_batch[:,None,None]
+        boxes_xyxy = np.ones_like(boxes)
+        boxes_xyxy[..., 0] = boxes[..., 0] - boxes[..., 2]/2.
+        boxes_xyxy[..., 1] = boxes[..., 1] - boxes[..., 3]/2.
+        boxes_xyxy[..., 2] = boxes[..., 0] + boxes[..., 2]/2.
+        boxes_xyxy[..., 3] = boxes[..., 1] + boxes[..., 3]/2.
+        boxes_xyxy /= ratios_batch[:,None,None]
 
-            boxes_batch=[]
-            scores_batch=[]
-            cls_batch=[]
-            for b,s  in zip(boxes_xyxy, scores):
-                dets = multiclass_nms(b, s, nms_thr=0.45, score_thr=0.1)
-                final_boxes, final_scores, final_cls_inds = dets[:, :4], dets[:, 4], dets[:, 5]
+        boxes_batch=[]
+        scores_batch=[]
+        cls_batch=[]
+        for b,s  in zip(boxes_xyxy, scores):
+            dets = multiclass_nms(b, s, nms_thr=0.45, score_thr=0.1)
+            final_boxes, final_scores, final_cls_inds = dets[:, :4], dets[:, 4], dets[:, 5]
 
-                boxes_batch.append(final_boxes)
-                scores_batch.append(final_scores)
-                cls_batch.append(final_cls_inds)
+            boxes_batch.append(final_boxes)
+            scores_batch.append(final_scores)
+            cls_batch.append(final_cls_inds)
 
-            return boxes_batch,scores_batch,cls_batch
-        return f
+        return boxes_batch,scores_batch,cls_batch
+        
 
     def _pre_proc_frame(self,img):
         if len(img.shape) == 3:

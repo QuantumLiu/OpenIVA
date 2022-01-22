@@ -12,3 +12,4 @@ arc_res50_ccrop_sim.onnx
 yolox_m_sim.onnx
 yolox_s_sim.onnx
 yolox_tiny_sim.onnx
+openiva/models/alignment/model_loop.py

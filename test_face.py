@@ -39,7 +39,7 @@ if __name__ == "__main__":
 
 
     rectangles_batch, probes_batch=detector.predict([img_wild])
-    landmarks = lm_extractor.predict(img_wild, rectangles_batch[0])
+    landmarks = lm_extractor.predict_single(img_wild, rectangles_batch[0])
 
     print("Testing performance....")
     batchsize=8
@@ -47,11 +47,11 @@ if __name__ == "__main__":
 
     print("Warm up")
     for _ in tqdm(range(10)):
-        _=arcface.predict(img_wild,[lm]*batchsize)[0]
+        _=arcface.predict_single(img_wild,[lm]*batchsize)[0]
 
     t_s=time.time()
     for _ in tqdm(range(1000)):
-        _=arcface.predict(img_wild,[lm]*batchsize)[0]
+        _=arcface.predict_single(img_wild,[lm]*batchsize)[0]
     t_e=time.time()
     time_batch_emb=(t_e-t_s)/1000
     time_face_emb=time_batch_emb/batchsize
@@ -63,8 +63,8 @@ if __name__ == "__main__":
     n_faces=len(rectangles_batch[-1])
     print("{} faces detected".format(n_faces))
 
-    landmarks = lm_extractor.predict(img_wild, rectangles_batch[0])
-    features_array=arcface.predict(img_wild,landmarks)
+    landmarks = lm_extractor.predict_single(img_wild, rectangles_batch[0])
+    features_array=arcface.predict_single(img_wild,landmarks)
 
     inds,knowns,dists_max=facial_db.query_N2N(features_array)
 
@@ -81,8 +81,6 @@ if __name__ == "__main__":
             draw = ImageDraw.Draw(image)
             fontText = ImageFont.truetype("datas/fonts/SourceHanSansHWSC-Regular.otf", 18, encoding="utf-8")
             draw.text((cx, cy-32),name,font=fontText,fill=(0, 255, 255))
-            # cv2.putText(img_wild, name, (cx, cy-18),\
-            #                 cv2.FONT_HERSHEY_DUPLEX, 0.5, (0, 255, 0))
             img_wild=cv2.cvtColor(np.asarray(image),cv2.COLOR_RGB2BGR)
 
     name = "datas/imgs_results/vis_recog.jpg"

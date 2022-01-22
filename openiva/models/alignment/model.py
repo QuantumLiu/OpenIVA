@@ -8,14 +8,15 @@ __all__ = ["LandmarksExtractor"]
 class LandmarksExtractor(BaseNet):
 
     @staticmethod
-    def pre_process(data_raw):
+    def _transform(img):
         """
-        Returns pre-processed ndarray (n,h,w,c).
+        Returns pre-processed ndarray (h,w,3).
         Args:
-            data_raw: raw data ndarray (n,h,w,c) 
+            data_raw: raw data ndarray (h,w,3) 
         Returns:
-            pre-processed ndarray (n,h,w,c)
+            pre-processed ndarray (3,h,w)
         """
+        data_raw=img
         data_raw = cv2.resize(data_raw, (112, 112),interpolation=cv2.INTER_LINEAR)
         data_raw = cv2.cvtColor(data_raw, cv2.COLOR_BGR2RGB)
         data_raw=data_raw.astype(np.float32)
@@ -23,8 +24,35 @@ class LandmarksExtractor(BaseNet):
         data_infer=np.transpose(data_raw, [2, 0, 1])#[None]
         return data_infer
 
-    @staticmethod
-    def post_process(output, w, h):
+    def pre_process(self,data):
+        """
+        Returns pre-processed ndarray (n,h,w,c).
+        Args:
+            data: raw data ndarray (n,h,w,c) 
+        Returns:
+            pre-processed ndarray (n,h,w,c)
+        """
+        batch_images=data["batch_images"]
+        batch_rectangles=data["batch_rectangles"]
+
+        face_imgs=[]
+        sizes=[]
+
+        for image,rectangles in zip(batch_images,batch_rectangles):
+            for rectangle in rectangles:
+                cropped = Crop(image, rectangle)
+
+                h,w=cropped.shape[:2]
+                sizes.append((w,h))
+
+                face_img=self._transform(cropped)
+                face_imgs.append(face_img)
+
+        data_infer=np.ascontiguousarray(face_imgs,dtype=np.float32)
+
+        return {"data_infer":data_infer,"sizes":sizes}
+
+    def post_process(self,data):
         """
         Returns results (68,2).
         Args:
@@ -33,50 +61,26 @@ class LandmarksExtractor(BaseNet):
             results: landmarks ndarrays (68,2)
         """
         # output=outputs[0]
-        points = output.reshape(-1, 2) * (w, h)
-        return points
-
-
-    # @profile
-    def predict(self,data,rectangles):
-        """
-        Returns face landmarks.
-        Args:
-            image: Bitmap
-            rectanges: Rectangles
-
-        Returns:
-            Array
-        """
-
-                
-
-        lms = []
-        face_imgs=[]
-        sizes=[]
-        for rectangle in rectangles:
-            cropped = Crop(data, rectangle)
-
-            h,w=cropped.shape[:2]
-            sizes.append((w,h))
-
-            face_img=self.pre_process(cropped)
-            face_imgs.append(face_img)
+        outputs, sizes=data["outputs"][0],data["sizes"]
+        batch_rectangles=data["batch_rectangles"]
         
-        data_infer=np.ascontiguousarray(face_imgs,dtype=np.float32)
+        batch_lms=[]
+        n=0
+        for rectangles in batch_rectangles:
+            lms=[]
+            for output,rectangle in zip(outputs,rectangles):
+                (w,h)=sizes[n]
+                points = output.reshape(-1, 2) * (w, h)
+                for i in range(len(points)):
+                    points[i] += (rectangle[0], rectangle[1])
 
-        outputs = self._infer(data_infer)
+                lms.append(points)
+                n+=1
+            batch_lms.append(lms)
+        return batch_lms
 
-        output_batch=outputs[0]
-        for output,rectangle,(w,h) in zip(output_batch,rectangles,sizes):
-            points=self.post_process(output,w,h)
-
-            for i in range(len(points)):
-                points[i] += (rectangle[0], rectangle[1])
-
-            lms.append(points)
-
-        return lms
+    def predict_single(self, image:np.ndarray,rectangles:list):
+        return self.predict({"batch_images":[image],"batch_rectangles":[rectangles]})[0]
 
 
 def Crop(image, rectangle):

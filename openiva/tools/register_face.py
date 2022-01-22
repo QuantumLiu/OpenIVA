@@ -52,8 +52,8 @@ def worker_dir(path_dir,detector: Detector,lm_extractor: LandmarksExtractor,arcf
                     # print("More than 1 face or no face in img, PASS")
                     continue
 
-                lm = lm_extractor.predict(img_src, rectangles)[0]
-                feature_vec=arcface.predict(img_src,[lm])[0]
+                lm = lm_extractor.predict_single(img_src, rectangles)[0]
+                feature_vec=arcface.predict_single(img_src,[lm])[0]
                 feature_list.append(feature_vec)
                 nb_imgs+=1
 

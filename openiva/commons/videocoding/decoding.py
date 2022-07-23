@@ -10,7 +10,7 @@ def decode_video_batch_local(video_path:str,batch_size:int = 8,skip:int = 1):
         Data generator for decoding local videos and produce batch data.
         :returns
             yield batch data dictionary like:
-            {'batch_frames':[np.ndarray,...np.ndarray],
+            {'batch_images':[np.ndarray,...np.ndarray],
             'batch_indecies':[1,2,3,...],
             'batch_src_size':[(w,h),(w,h),...,(w,h)],
             'height':int
@@ -35,7 +35,7 @@ def decode_video_batch_local(video_path:str,batch_size:int = 8,skip:int = 1):
         last_i=samples_indecies[-1]
         # n_sample=0
 
-        batch_frames=[]
+        batch_images=[]
         batch_indecies=[]
 
         empty_frame=np.ones((info_dict["height"],info_dict["width"],3),dtype=np.uint8)
@@ -43,12 +43,12 @@ def decode_video_batch_local(video_path:str,batch_size:int = 8,skip:int = 1):
         q_dict_out={'flag_start':True,'flag_end':False,'real_len':0}
 
         for i_sample in tqdm(samples_indecies):
-            if len(batch_frames)==batch_size:
+            if len(batch_images)==batch_size:
                 #print('putting')
 
-                q_dict_out['batch_src_size']=[frame.shape[:2][::-1] for frame in batch_frames]
+                q_dict_out['batch_src_size']=[frame.shape[:2][::-1] for frame in batch_images]
                 q_dict_out['height'],q_dict_out['width']=frame.shape[:2]
-                q_dict_out['batch_frames']=batch_frames
+                q_dict_out['batch_images']=batch_images
                 q_dict_out['batch_indecies']=batch_indecies
 
                 q_dict_out['flag_end']=(i_sample==last_i)
@@ -56,7 +56,7 @@ def decode_video_batch_local(video_path:str,batch_size:int = 8,skip:int = 1):
 
                 #Flush
 
-                batch_frames=[]
+                batch_images=[]
                 batch_indecies=[]
                 q_dict_out={'flag_start':False,'flag_end':False,'real_len':0}
                 
@@ -69,7 +69,7 @@ def decode_video_batch_local(video_path:str,batch_size:int = 8,skip:int = 1):
                     else:
                         Warning('Got empty frame {} in file {}'.format(i_frame,video_path))
                         out=empty_frame
-                    batch_frames.append(out)
+                    batch_images.append(out)
                     batch_indecies.append(i_frame-1)
                     q_dict_out['real_len']+=1
                     break
@@ -81,10 +81,10 @@ def decode_video_batch_local(video_path:str,batch_size:int = 8,skip:int = 1):
             print('The end batch real size is:{}'.format(q_dict_out['real_len']))
             if (not q_dict_out['real_len']==batch_size):
                 for _ in range(batch_size-q_dict_out['real_len']):
-                    batch_frames.append(empty_frame)
+                    batch_images.append(empty_frame)
                     batch_indecies.append(i_frame-1)
             q_dict_out['src_size']=frame.shape[:2][::-1]
             q_dict_out['height'],q_dict_out['width']=out.shape[:2]
-            q_dict_out['batch_frames']=batch_frames
+            q_dict_out['batch_images']=batch_images
             q_dict_out['batch_indecies']=batch_indecies
             yield q_dict_out

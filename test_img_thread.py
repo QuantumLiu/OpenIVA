@@ -5,30 +5,32 @@ import cv2
 from openiva.commons.io import get_img_pathes_recursively
 
 from openiva.workers import ThreadImgsLocal
-from openiva.models.group import ModelDataConfig
+from openiva.models.group import ModelConfig
 
+from openiva.models.yolov4 import YOLOV4
+
+import sys
 
 if __name__ == "__main__":
 
-    nb_ths=1
+    nb_ths=6
     nb_tasks=6
 
     q_task=Queue(100)
     q_compute=Queue(100)
 
-    def prepro_func(data,width=None,height=None):
-        data=cv2.resize(data,(width,height))
-        return data/255
 
-
-    model_configs=(ModelDataConfig("yolo_test",prepro_func,preproc_kwargs={"width":640,"height":640}),
-                    ModelDataConfig.from_dict({"model_name":"yolo_test2","func_preproc":prepro_func,"preproc_kwargs":{"width":640,"height":640}}))
+    input_size=(416,416)
+    model_configs=(ModelConfig("yolo_test",YOLOV4,weights_path="weights\yolov4_1_3_416_416_static.onnx",\
+        preproc_kwargs={"input_size":input_size},\
+        postproc_kwargs={"input_size":input_size}),)
 
     ths_data=[ThreadImgsLocal(q_task,q_compute,model_configs,batch_size=8,shuffle=True) for _ in range(nb_ths)]
     for th_data in ths_data:
+        th_data.setDaemon(1)
         th_data.start()
 
-    fns_img=get_img_pathes_recursively("datas/imgs_celebrity")
+    fns_img=get_img_pathes_recursively(r"E:\DATA\moto_data\imagesets")
     for task_id in range(nb_tasks):
         print("Putting task: {}".format(task_id))
         q_task.put({"pathes_imgs":fns_img,"task_id":task_id})
@@ -39,6 +41,6 @@ if __name__ == "__main__":
         if data_batch["flag_end"]:
             nb_done+=int(data_batch["flag_end"])
 
-    for th_data in ths_data:
-        th_data.stop()
+    # for th_data in ths_data:
+    #     th_data.stop()
     # quit()

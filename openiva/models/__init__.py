@@ -1,2 +1,2 @@
 from .base import BaseNet
-from .group import ModelDataConfig,ModelGroup
+from .group import ModelConfig,ModelGroup

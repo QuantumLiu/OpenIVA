@@ -2,11 +2,10 @@ import onnxruntime
 import numpy as np
 import cv2
 
+
 class BaseNet(object):
 
-
-
-    def __init__(self, engine_path, options = None):
+    def __init__(self, engine_path, options=None):
         """
         Initializes face detector.
         Args:
@@ -14,18 +13,18 @@ class BaseNet(object):
             nmsThreshold: NonMaxSuppression threshold (defaults to 0.5)
             sessionOptions: Session options.
         """
-        
+
         self.engine_path = engine_path
-        
-        self.options=options
+
+        self.options = options
 
         self.engine = None
         self.load_engine()
-        
+
     def load_engine(self):
         pass
 
-    def _infer(self, data:dict):
+    def _infer(self, data: dict):
         """
         Returns onnx inference outputs.
         Args:

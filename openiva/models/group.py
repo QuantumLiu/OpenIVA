@@ -7,15 +7,17 @@ class ModelConfig(object):
     def from_dict(cls, config_dict):
         return cls(**config_dict)
 
-    def __init__(self, model_name: str,model_calss: BaseNet,weights_path: str, func_preproc: callable=None,func_postproc: callable=None, preproc_kwargs: dict = None, postproc_kwargs: dict = None) -> None:
+    def __init__(self, model_name: str, model_calss: BaseNet, weights_path: str, func_preproc: callable = None, func_postproc: callable = None, preproc_kwargs: dict = None, postproc_kwargs: dict = None) -> None:
         super().__init__()
         self._model_name = model_name
-        self.model_calss=model_calss
-        self._weights_path=weights_path
+        self.model_calss = model_calss
+        self._weights_path = weights_path
 
-        self._func_preproc = self.model_calss.func_pre_process() if func_preproc is None else func_preproc
-        self._func_postproc= self.model_calss.func_post_process() if func_postproc is None else func_postproc
-        
+        self._func_preproc = self.model_calss.func_pre_process(
+        ) if func_preproc is None else func_preproc
+        self._func_postproc = self.model_calss.func_post_process(
+        ) if func_postproc is None else func_postproc
+
         # self._is_proc_batch = is_proc_batch
 
         self._preproc_kwargs = (
@@ -49,11 +51,10 @@ class ModelConfig(object):
     def model_name(self):
         return self._model_name
 
-
     @property
     def weights_path(self):
         return self._weights_path
-    
+
     @property
     def func_preproc(self):
         return self._func_preproc
@@ -73,7 +74,6 @@ class ModelConfig(object):
     @property
     def postproc_kwargs(self):
         return self._postproc_kwargs
-
 
 
 class ModelGroup(object):

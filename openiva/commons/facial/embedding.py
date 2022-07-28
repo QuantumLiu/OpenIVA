@@ -1,6 +1,7 @@
 import numpy as np
 import cv2
 
+
 def umeyama(src, dst, estimate_scale):
     """Estimate N-D similarity transformation with or without scaling.
     Parameters
@@ -72,34 +73,37 @@ def umeyama(src, dst, estimate_scale):
     return T
 
 
-def get_transform_mat (image_landmarks,mean_pts, output_size=112, scale=1.0):
+def get_transform_mat(image_landmarks, mean_pts, output_size=112, scale=1.0):
     if not isinstance(image_landmarks, np.ndarray):
-        image_landmarks = np.array (image_landmarks) 
-    padding = 1#(output_size / 64) * 1
+        image_landmarks = np.array(image_landmarks)
+    padding = 1  # (output_size / 64) * 1
 
     mat = umeyama(image_landmarks, mean_pts, True)[0:2]
     mat = mat * (output_size - 2 * padding)
-    mat[:,2] += padding        
+    mat[:, 2] += padding
     mat *= (1 / scale)
-    mat[:,2] += -output_size*( ( (1 / scale) - 1.0 ) / 2 )
+    mat[:, 2] += -output_size*(((1 / scale) - 1.0) / 2)
 
     return mat
 
+
 def transform_points(points, mat, invert=False):
     if invert:
-        mat = cv2.invertAffineTransform (mat)
+        mat = cv2.invertAffineTransform(mat)
     points = np.expand_dims(points, axis=1)
     points = cv2.transform(points, mat, points.shape)
     points = np.squeeze(points)
     return points
 
-def warp_img(mat,img,dshape=(112,112),invert=False):
+
+def warp_img(mat, img, dshape=(112, 112), invert=False):
     if invert:
-        M=cv2.invertAffineTransform(mat)
+        M = cv2.invertAffineTransform(mat)
     else:
-        M=mat
-    warped=cv2.warpAffine(img,M,dshape,cv2.INTER_LANCZOS4)
+        M = mat
+    warped = cv2.warpAffine(img, M, dshape, cv2.INTER_LANCZOS4)
     return warped
+
 
 def l2_norm(x, axis=-1):
     """l2 norm"""
@@ -108,34 +112,37 @@ def l2_norm(x, axis=-1):
 
     return output
 
-def face_distance(known_face_encoding,face_encoding_to_check):
-    fl=np.asarray(known_face_encoding)
-    return np.dot(fl,face_encoding_to_check)
+
+def face_distance(known_face_encoding, face_encoding_to_check):
+    fl = np.asarray(known_face_encoding)
+    return np.dot(fl, face_encoding_to_check)
+
 
 def face_identify(known_face_encoding, face_encoding_to_check, tolerance=0.6):
-    distance=face_distance(known_face_encoding, face_encoding_to_check)
-    
-    argmax=np.argmax(distance)
-    d_min=distance[argmax]
+    distance = face_distance(known_face_encoding, face_encoding_to_check)
 
-    if distance[argmax]<tolerance:
-        index=-1
-        is_known=False
+    argmax = np.argmax(distance)
+    d_min = distance[argmax]
+
+    if distance[argmax] < tolerance:
+        index = -1
+        is_known = False
     else:
-        index=argmax
-        is_known=True
-    return is_known,index,d_min
+        index = argmax
+        is_known = True
+    return is_known, index, d_min
 
-def sub_feature(feature_list,rate=0.9):
-    feature_list=np.asarray(feature_list)
-    mean_feature=np.mean(feature_list,axis=0)
-    
-    nb_feature=int(rate*len(feature_list))
+
+def sub_feature(feature_list, rate=0.9):
+    feature_list = np.asarray(feature_list)
+    mean_feature = np.mean(feature_list, axis=0)
+
+    nb_feature = int(rate*len(feature_list))
     if nb_feature:
-        dists=face_distance(feature_list,mean_feature)
-        
-        sub_feature_list= feature_list[np.argsort(dists)[::-1][:nb_feature]]
-        mean_feature=l2_norm(np.mean(sub_feature_list,axis=0))
-        return sub_feature_list,mean_feature
+        dists = face_distance(feature_list, mean_feature)
+
+        sub_feature_list = feature_list[np.argsort(dists)[::-1][:nb_feature]]
+        mean_feature = l2_norm(np.mean(sub_feature_list, axis=0))
+        return sub_feature_list, mean_feature
     else:
-        return feature_list.copy(),feature_list[0].copy()
+        return feature_list.copy(), feature_list[0].copy()

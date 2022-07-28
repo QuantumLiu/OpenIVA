@@ -10,8 +10,6 @@ from openiva.commons.videocoding import decode_video_batch_local
 from openiva.commons.generators import read_images_local
 
 
-
-
 class ThreadProc(StoppableThread):
     def __init__(self, q_task: Queue, q_compute: Queue,
                  model_configs: tuple,
@@ -63,13 +61,13 @@ class ThreadProc(StoppableThread):
 
     def _apply_proc(self, task_id, data_dict_batch):
         q_dict_out = {'task_id': task_id}
-        batch_data = data_dict_batch#[self.key_batch_data]
+        batch_data = data_dict_batch  # [self.key_batch_data]
 
         for model_config in self.model_configs:
             preproc_kwargs = model_config.preproc_kwargs
 
-            q_dict_out[model_config.model_name]={}
-            if True:#model_config.is_proc_batch:
+            q_dict_out[model_config.model_name] = {}
+            if True:  # model_config.is_proc_batch:
                 q_dict_out[model_config.model_name]["data_preproc"] = model_config.func_preproc(
                     batch_data, **preproc_kwargs)
             # else:
@@ -163,9 +161,7 @@ class ThreadDATA(ThreadProc):
                     q_dict_task = self.q_task.get(timeout=1.)
                     task_id = q_dict_task["task_id"]
                 except Empty:
-                    if self.stopped:
-                        return
-                    continue
+                    return
 
                 data_gen_kwargs = (self.data_gen_kwargs).copy()
                 for k in self.data_gen_keys:
@@ -180,7 +176,6 @@ class ThreadDATA(ThreadProc):
 
             except KeyboardInterrupt:
                 return
-
 
 
 class ThreadVideoLocal(ThreadDATA):

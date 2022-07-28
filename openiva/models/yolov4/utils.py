@@ -30,8 +30,8 @@ def plot_boxes_cv2(img, boxes, cls_confs=None, cls_ids=None, class_names=None, s
         else:
             rgb = (255, 0, 0)
         if class_names:
-            cls_id=cls_ids[i]
-            cls_conf=cls_confs[i]
+            cls_id = cls_ids[i]
+            cls_conf = cls_confs[i]
             print('%s: %f' % (class_names[cls_id], cls_conf))
             classes = len(class_names)
             offset = cls_id * 123457 % classes
@@ -48,6 +48,7 @@ def plot_boxes_cv2(img, boxes, cls_confs=None, cls_ids=None, class_names=None, s
         cv2.imwrite(savename, img)
     return img
 
+
 def get_area(box):
     x1 = box[0]
     y1 = box[1]
@@ -62,8 +63,8 @@ def crop_boxes(img, boxes, cls_confs, cls_ids, class_names):
     width = img.shape[1]
     height = img.shape[0]
 
-    areas=[]
-    crops={cls:[] for cls in class_names}
+    areas = []
+    crops = {cls: [] for cls in class_names}
 
     for i in range(len(boxes)):
         box = boxes[i]
@@ -73,19 +74,20 @@ def crop_boxes(img, boxes, cls_confs, cls_ids, class_names):
         y1 = int(box[1] * height)
         x2 = int(box[2] * width)
         y2 = int(box[3] * height)
-        area=(x2-x1)*(y2-y1)
+        area = (x2-x1)*(y2-y1)
 
-        cls_id=cls_ids[i]
-        cls_conf=cls_confs[i]
-        cls=class_names[cls_id]
+        cls_id = cls_ids[i]
+        cls_conf = cls_confs[i]
+        cls = class_names[cls_id]
 
-        img_patch=img[y1:y2,x1:x2].copy()
-        crops[cls].append([img_patch,area,cls,cls_conf])
+        img_patch = img[y1:y2, x1:x2].copy()
+        crops[cls].append([img_patch, area, cls, cls_conf])
 
     for cls in crops.keys():
-        crops[cls]=sorted(crops[cls],key=lambda x:-1*x[1])
+        crops[cls] = sorted(crops[cls], key=lambda x: -1*x[1])
 
     return crops
+
 
 def load_class_names(namesfile):
     class_names = []

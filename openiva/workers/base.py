@@ -1,5 +1,6 @@
 from threading import Thread, Event
 
+
 class StoppableThread(Thread):
     def __init__(self) -> None:
         super().__init__()

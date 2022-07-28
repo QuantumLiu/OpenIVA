@@ -15,11 +15,10 @@ if __name__ == "__main__":
     q_task = Queue(100)
     q_compute = Queue(100)
 
-
-    input_size=(416,416)
-    model_configs=(ModelConfig("yolo_test",YOLOV4,weights_path="weights\yolov4_1_3_416_416_static.onnx",\
-        preproc_kwargs={"input_size":input_size},\
-        postproc_kwargs={"input_size":input_size}),)
+    input_size = (416, 416)
+    model_configs = (ModelConfig("yolo_test", YOLOV4, weights_path="weights\yolov4_1_3_416_416_static.onnx",
+                                 preproc_kwargs={"input_size": input_size},
+                                 postproc_kwargs={"input_size": input_size}),)
 
     ths_data = [ThreadVideoLocal(
         q_task, q_compute, model_configs, batch_size=8, skip=1) for _ in range(nb_ths)]
@@ -36,6 +35,3 @@ if __name__ == "__main__":
         data_batch = q_compute.get()
         if data_batch["flag_end"]:
             nb_done += int(data_batch["flag_end"])
-
-    for th_data in ths_data:
-        th_data.stop()

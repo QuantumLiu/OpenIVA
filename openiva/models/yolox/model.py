@@ -4,7 +4,7 @@ import cv2
 from openiva.models.base import BaseNet
 from .utils import multiclass_nms
 
-__all__ = ["YOLOX","pre_process","post_process"]
+__all__ = ["YOLOX", "pre_process", "post_process"]
 
 
 class YOLOX(BaseNet):
@@ -14,24 +14,26 @@ class YOLOX(BaseNet):
         self.with_p6 = with_p6
 
     def pre_process(self, data: dict):
-        return pre_process(data,self.input_size)
+        return pre_process(data, self.input_size)
 
     def post_process(self, data: dict):
         return post_process(data, self.input_size, self.with_p6)
 
-def pre_process(data,input_size):
+
+def pre_process(data, input_size):
     ratios_batch = []
     data_raw = data["batch_images"]
     data_batch = YOLOX.warp_batch(data_raw)
     data_infer = []
     for img in data_batch:
-        img_padded, ratio = _pre_proc_frame(img,input_size)
+        img_padded, ratio = _pre_proc_frame(img, input_size)
         data_infer.append(img_padded)
         ratios_batch.append(ratio)
 
     data_infer = np.ascontiguousarray(data_infer, dtype=np.float32)
     ratios_batch = np.asarray(ratios_batch)
     return {"data_infer": data_infer, "ratios_batch": ratios_batch}
+
 
 def post_process(data, input_size, with_p6):
 
@@ -56,7 +58,7 @@ def post_process(data, input_size, with_p6):
     for b, s in zip(boxes_xyxy, scores):
         dets = multiclass_nms(b, s, nms_thr=0.45, score_thr=0.1)
         final_boxes, final_scores, final_cls_inds = dets[:,
-                                                            :4], dets[:, 4], dets[:, 5]
+                                                         :4], dets[:, 4], dets[:, 5]
 
         boxes_batch.append(final_boxes)
         scores_batch.append(final_scores)
@@ -64,7 +66,8 @@ def post_process(data, input_size, with_p6):
 
     return boxes_batch, scores_batch, cls_batch
 
-def _pre_proc_frame(img,input_size):
+
+def _pre_proc_frame(img, input_size):
     if len(img.shape) == 3:
         padded_img = np.ones(
             (input_size[0], input_size[1], 3), dtype=np.uint8) * 114
@@ -79,7 +82,7 @@ def _pre_proc_frame(img,input_size):
         interpolation=cv2.INTER_LINEAR,
     ).astype(np.uint8)
     padded_img[: int(img.shape[0] * r),
-                : int(img.shape[1] * r)] = resized_img
+               : int(img.shape[1] * r)] = resized_img
 
     padded_img = padded_img.transpose((2, 0, 1))
     padded_img = np.ascontiguousarray(padded_img, dtype=np.float32)

@@ -5,44 +5,46 @@ from openiva.models.base import BaseNet
 
 __all__ = ["Detector"]
 
+
 class Detector(BaseNet):
-    def __init__(self, onnx_path, input_size=(640,480), confidenceThreshold = 0.95, nmsThreshold = 0.5, top_k=5, sessionOptions=None,providers="cpu"):
-        super().__init__(onnx_path, sessionOptions=sessionOptions,providers=providers)
+    def __init__(self, onnx_path, input_size=(640, 480), confidenceThreshold=0.95, nmsThreshold=0.5, top_k=5, sessionOptions=None, providers="cpu"):
+        super().__init__(onnx_path, sessionOptions=sessionOptions, providers=providers)
 
-        self.input_size=input_size
-        self.confidenceThreshold=confidenceThreshold
-        self.nmsThreshold=nmsThreshold
-        self.top_k=top_k
-        
+        self.input_size = input_size
+        self.confidenceThreshold = confidenceThreshold
+        self.nmsThreshold = nmsThreshold
+        self.top_k = top_k
 
-    def pre_process(self,data):
-        sizes_batch=[]
-        data_raw=data["batch_images"]
-        data_batch=self.warp_batch(data_raw)
-        data_infer=[]
+    def pre_process(self, data):
+        sizes_batch = []
+        data_raw = data["batch_images"]
+        data_batch = self.warp_batch(data_raw)
+        data_infer = []
         for img_raw in data_batch:
-            img_infer,size=self._pre_proc_frame(img_raw)
+            img_infer, size = self._pre_proc_frame(img_raw)
             data_infer.append(img_infer)
             sizes_batch.append(size)
 
-        data_infer=np.ascontiguousarray(data_infer,dtype=np.float32)
-        sizes_batch=np.asarray(sizes_batch)
-        return {"data_infer":data_infer,"sizes_batch":sizes_batch}
-
+        data_infer = np.ascontiguousarray(data_infer, dtype=np.float32)
+        sizes_batch = np.asarray(sizes_batch)
+        return {"data_infer": data_infer, "sizes_batch": sizes_batch}
 
     def _pre_proc_frame(self, img_raw):
-        img = cv2.resize(img_raw, self.input_size,interpolation=cv2.INTER_LINEAR)
+        img = cv2.resize(img_raw, self.input_size,
+                         interpolation=cv2.INTER_LINEAR)
         img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-        img=img.astype(np.float32)
-        img=(img-127.)/128.
-        img_infer=np.transpose(img, [2, 0, 1])#[None]
-        return img_infer,img_raw.shape[:2]
+        img = img.astype(np.float32)
+        img = (img-127.)/128.
+        img_infer = np.transpose(img, [2, 0, 1])  # [None]
+        return img_infer, img_raw.shape[:2]
 
-    def post_process(self,data):
-        sizes_batch=data["sizes_batch"]
-        boxes_batch, confidences_batch=data["outputs"]
-        rectangles_batch, probes_batch = _parse_result(sizes_batch, boxes_batch, confidences_batch, self.confidenceThreshold, self.nmsThreshold, self.top_k)
+    def post_process(self, data):
+        sizes_batch = data["sizes_batch"]
+        boxes_batch, confidences_batch = data["outputs"]
+        rectangles_batch, probes_batch = _parse_result(
+            sizes_batch, boxes_batch, confidences_batch, self.confidenceThreshold, self.nmsThreshold, self.top_k)
         return rectangles_batch, probes_batch
+
 
 def _parse_result(sizes_batch, boxes_batch, confidences_batch, prob_threshold, iou_threshold=0.5, top_k=5):
     """
@@ -58,26 +60,27 @@ def _parse_result(sizes_batch, boxes_batch, confidences_batch, prob_threshold, i
         boxes (N, K, 4): an array of boxes kept
         probs (N, K): an array of probabilities for each boxes being in corresponding labels
     """
-    picked_box_batch=[]
-    picked_probs_batch=[]
-    for boxes, confidences,(height,width) in zip(boxes_batch,confidences_batch,sizes_batch):
+    picked_box_batch = []
+    picked_probs_batch = []
+    for boxes, confidences, (height, width) in zip(boxes_batch, confidences_batch, sizes_batch):
         picked_box_probs = []
-        
+
         probs = confidences[:, 1]
         mask = probs > prob_threshold
         probs = probs[mask]
-        
+
         if len(probs) == 0:
             picked_box_batch.append(np.array([]))
             picked_probs_batch.append(np.array([]))
             continue
 
         subset_boxes = boxes[mask, :]
-        box_probs = np.concatenate([subset_boxes, probs.reshape(-1, 1)], axis=1)
+        box_probs = np.concatenate(
+            [subset_boxes, probs.reshape(-1, 1)], axis=1)
         box_probs = __hard_nms(box_probs,
-        iou_threshold=iou_threshold,
-        top_k=top_k,
-        )
+                               iou_threshold=iou_threshold,
+                               top_k=top_k,
+                               )
         picked_box_probs.append(box_probs)
 
         if not picked_box_probs:
@@ -90,11 +93,13 @@ def _parse_result(sizes_batch, boxes_batch, confidences_batch, prob_threshold, i
         picked_box_probs[:, 1] *= height
         picked_box_probs[:, 2] *= width
         picked_box_probs[:, 3] *= height
-        
-        picked_box_batch.append(ToBoxN(picked_box_probs[:, :4].astype(np.int32)))
+
+        picked_box_batch.append(
+            ToBoxN(picked_box_probs[:, :4].astype(np.int32)))
         picked_probs_batch.append(picked_box_probs[:, 4])
 
-    return picked_box_batch,picked_probs_batch
+    return picked_box_batch, picked_probs_batch
+
 
 def __area_of(left_top, right_bottom):
     """
@@ -107,6 +112,7 @@ def __area_of(left_top, right_bottom):
     """
     hw = np.clip(right_bottom - left_top, 0.0, None)
     return hw[..., 0] * hw[..., 1]
+
 
 def __iou_of(boxes0, boxes1, eps=1e-5):
     """
@@ -125,6 +131,7 @@ def __iou_of(boxes0, boxes1, eps=1e-5):
     area0 = __area_of(boxes0[..., :2], boxes0[..., 2:])
     area1 = __area_of(boxes1[..., :2], boxes1[..., 2:])
     return overlap_area / (area0 + area1 - overlap_area + eps)
+
 
 def __hard_nms(box_scores, iou_threshold, top_k=-1, candidate_size=200):
     """
@@ -168,14 +175,14 @@ def ToBoxN(rectangle_N):
     Returns:
         Rectangle
     """
-    width = rectangle_N[:,2] - rectangle_N[:,0]
-    height = rectangle_N[:,3] - rectangle_N[:,1]
-    m=np.max([width,height],axis=0)
+    width = rectangle_N[:, 2] - rectangle_N[:, 0]
+    height = rectangle_N[:, 3] - rectangle_N[:, 1]
+    m = np.max([width, height], axis=0)
     dx = ((m - width)/2).astype("int32")
     dy = ((m - height)/2).astype("int32")
 
-    rectangle_N[:,0] -= dx
-    rectangle_N[:,1] -= dy
-    rectangle_N[:,2] += dx
-    rectangle_N[:,3] += dy
+    rectangle_N[:, 0] -= dx
+    rectangle_N[:, 1] -= dy
+    rectangle_N[:, 2] += dx
+    rectangle_N[:, 3] += dy
     return rectangle_N

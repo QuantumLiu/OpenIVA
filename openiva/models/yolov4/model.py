@@ -3,7 +3,7 @@ import cv2
 
 from openiva.models.base import BaseNet
 
-__all__ = ["YOLOV4","pre_process","post_process"]
+__all__ = ["YOLOV4", "pre_process", "post_process"]
 
 
 class YOLOV4(BaseNet):
@@ -11,12 +11,11 @@ class YOLOV4(BaseNet):
         super().__init__(onnx_path, sessionOptions=sessionOptions, providers=providers)
         self.input_size = input_size
 
-    def pre_process(self, data): 
+    def pre_process(self, data):
 
-        return pre_process(data,self.input_size)
+        return pre_process(data, self.input_size)
 
-
-    def post_process(self, data): 
+    def post_process(self, data):
 
         return post_process(data)
 
@@ -28,30 +27,34 @@ class YOLOV4(BaseNet):
     def func_post_process(cls):
         return post_process
 
-def pre_process(data,input_size):
+
+def pre_process(data, input_size):
     ratios_batch = []
     data_raw = data["batch_images"]
     data_batch = YOLOV4.warp_batch(data_raw)
     data_infer = []
     for img in data_batch:
-        img_padded = _pre_proc_frame(img,input_size)
+        img_padded = _pre_proc_frame(img, input_size)
         data_infer.append(img_padded)
 
     data_infer = np.ascontiguousarray(data_infer, dtype=np.float32)
     return {"data_infer": data_infer}
 
-def _pre_proc_frame(img,input_size):
+
+def _pre_proc_frame(img, input_size):
 
     img = cv2.resize(img, input_size, interpolation=cv2.INTER_LINEAR)
     img = img.transpose((2, 0, 1))
     img = np.ascontiguousarray(img, dtype=np.float32)/255.
     return img
 
-def post_process(data,conf_thresh=0.4, nms_thresh=0.6):
+
+def post_process(data, conf_thresh=0.4, nms_thresh=0.6):
 
     outputs = data["outputs"]
 
-    bboxes_batch, cls_confs_batch, cls_ids_batch = _post_processing(conf_thresh, nms_thresh, outputs)
+    bboxes_batch, cls_confs_batch, cls_ids_batch = _post_processing(
+        conf_thresh, nms_thresh, outputs)
 
     return bboxes_batch, cls_confs_batch, cls_ids_batch
 
@@ -148,10 +151,11 @@ def _post_processing(conf_thresh, nms_thresh, output):
                 ll_max_id = ll_max_id[keep]
 
                 for k in range(ll_box_array.shape[0]):
-                    box_list=[ll_box_array[k, 0], ll_box_array[k, 1], ll_box_array[k, 2], ll_box_array[k, 3]]
-                    box_list=[max(x,0) for x in box_list]
+                    box_list = [ll_box_array[k, 0], ll_box_array[k,
+                                                                 1], ll_box_array[k, 2], ll_box_array[k, 3]]
+                    box_list = [max(x, 0) for x in box_list]
                     bboxes.append(box_list)
-                    
+
                     cls_confs.append(ll_max_conf[k])
                     cls_ids.append(ll_max_id[k])
                     # bboxes.append([ll_box_array[k, 0], ll_box_array[k, 1], ll_box_array[k, 2], ll_box_array[k, 3], ll_max_conf[k], ll_max_conf[k], ll_max_id[k]])

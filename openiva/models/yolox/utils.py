@@ -1,6 +1,7 @@
 import numpy as np
 import cv2
 
+
 def nms(boxes, scores, nms_thr):
     """Single class NMS implemented in Numpy."""
     x1 = boxes[:, 0]
@@ -78,7 +79,8 @@ def multiclass_nms_class_agnostic(boxes, scores, nms_thr, score_thr):
     keep = nms(valid_boxes, valid_scores, nms_thr)
     if keep:
         dets = np.concatenate(
-            [valid_boxes[keep], valid_scores[keep, None], valid_cls_inds[keep, None]], 1
+            [valid_boxes[keep], valid_scores[keep, None],
+                valid_cls_inds[keep, None]], 1
         )
     return dets
 
@@ -111,7 +113,6 @@ def demo_postprocess(outputs, img_size, p6=False):
     return outputs
 
 
-
 def vis(img, boxes, scores, cls_ids, conf=0.5, class_names=None):
 
     for i in range(len(boxes)):
@@ -127,7 +128,8 @@ def vis(img, boxes, scores, cls_ids, conf=0.5, class_names=None):
 
         color = (_COLORS[cls_id] * 255).astype(np.uint8).tolist()
         text = '{}:{:.1f}%'.format(class_names[cls_id], score * 100)
-        txt_color = (0, 0, 0) if np.mean(_COLORS[cls_id]) > 0.5 else (255, 255, 255)
+        txt_color = (0, 0, 0) if np.mean(
+            _COLORS[cls_id]) > 0.5 else (255, 255, 255)
         font = cv2.FONT_HERSHEY_SIMPLEX
 
         txt_size = cv2.getTextSize(text, font, 0.4, 1)[0]
@@ -141,7 +143,8 @@ def vis(img, boxes, scores, cls_ids, conf=0.5, class_names=None):
             txt_bk_color,
             -1
         )
-        cv2.putText(img, text, (x0, y0 + txt_size[1]), font, 0.4, txt_color, thickness=1)
+        cv2.putText(
+            img, text, (x0, y0 + txt_size[1]), font, 0.4, txt_color, thickness=1)
 
     return img
 

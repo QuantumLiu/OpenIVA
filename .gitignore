@@ -13,3 +13,5 @@ yolox_m_sim.onnx
 yolox_s_sim.onnx
 yolox_tiny_sim.onnx
 openiva/models/alignment/model_loop.py
+weights/yolov4_-1_3_416_416_dynamic.onnx
+weights/yolov4_1_3_416_416_static.onnx

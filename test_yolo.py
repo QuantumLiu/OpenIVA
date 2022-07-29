@@ -16,7 +16,7 @@ so = onnxruntime.SessionOptions()
 so.graph_optimization_level = onnxruntime.GraphOptimizationLevel.ORT_DISABLE_ALL
 
 yolo = YOLOX("weights/yolox_s_sim.onnx", input_size=(640, 640),
-             sessionOptions=so, providers="tensorrt")
+             sessionOptions=so, providers="cuda")
 
 img = cv2.imread("datas/imgs_test/dog.jpg")
 

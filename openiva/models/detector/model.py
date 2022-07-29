@@ -1,12 +1,15 @@
 import numpy as np
 import cv2
 
-from openiva.models.base import BaseNet
+from openiva.models.base import BaseNetNew
+from openiva.engines import EngineORT
 
-__all__ = ["Detector"]
+__all__ = ["Detector", "pre_process", "post_process"]
 
 
-class Detector(BaseNet):
+class Detector(BaseNetNew):
+    ENGINE_CLASS = EngineORT
+
     def __init__(self, onnx_path, input_size=(640, 480), confidenceThreshold=0.95, nmsThreshold=0.5, top_k=5, sessionOptions=None, providers="cpu"):
         super().__init__(onnx_path, sessionOptions=sessionOptions, providers=providers)
 
@@ -16,34 +19,51 @@ class Detector(BaseNet):
         self.top_k = top_k
 
     def pre_process(self, data):
-        sizes_batch = []
-        data_raw = data["batch_images"]
-        data_batch = self.warp_batch(data_raw)
-        data_infer = []
-        for img_raw in data_batch:
-            img_infer, size = self._pre_proc_frame(img_raw)
-            data_infer.append(img_infer)
-            sizes_batch.append(size)
-
-        data_infer = np.ascontiguousarray(data_infer, dtype=np.float32)
-        sizes_batch = np.asarray(sizes_batch)
-        return {"data_infer": data_infer, "sizes_batch": sizes_batch}
-
-    def _pre_proc_frame(self, img_raw):
-        img = cv2.resize(img_raw, self.input_size,
-                         interpolation=cv2.INTER_LINEAR)
-        img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-        img = img.astype(np.float32)
-        img = (img-127.)/128.
-        img_infer = np.transpose(img, [2, 0, 1])  # [None]
-        return img_infer, img_raw.shape[:2]
+        return pre_process(data, self.input_size)
 
     def post_process(self, data):
-        sizes_batch = data["sizes_batch"]
-        boxes_batch, confidences_batch = data["outputs"]
-        rectangles_batch, probes_batch = _parse_result(
-            sizes_batch, boxes_batch, confidences_batch, self.confidenceThreshold, self.nmsThreshold, self.top_k)
-        return rectangles_batch, probes_batch
+        return post_process(data, self.confidenceThreshold, self.nmsThreshold, self.top_k)
+
+    @classmethod
+    def func_pre_process(cls):
+        return pre_process
+
+    @classmethod
+    def func_post_process(cls):
+        return post_process
+
+
+def pre_process(data, input_size):
+    sizes_batch = []
+    data_raw = data["batch_images"]
+    data_batch = Detector.warp_batch(data_raw)
+    data_infer = []
+    for img_raw in data_batch:
+        img_infer, size = _pre_proc_frame(img_raw, input_size)
+        data_infer.append(img_infer)
+        sizes_batch.append(size)
+
+    data_infer = np.ascontiguousarray(data_infer, dtype=np.float32)
+    sizes_batch = np.asarray(sizes_batch)
+    return {"data_infer": data_infer, "sizes_batch": sizes_batch}
+
+
+def _pre_proc_frame(img_raw, input_size):
+    img = cv2.resize(img_raw, input_size,
+                     interpolation=cv2.INTER_LINEAR)
+    img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+    img = img.astype(np.float32)
+    img = (img-127.)/128.
+    img_infer = np.transpose(img, [2, 0, 1])  # [None]
+    return img_infer, img_raw.shape[:2]
+
+
+def post_process(data, confidenceThreshold, nmsThreshold, top_k):
+    sizes_batch = data["sizes_batch"]
+    boxes_batch, confidences_batch = data["outputs"]
+    rectangles_batch, probes_batch = _parse_result(
+        sizes_batch, boxes_batch, confidences_batch, confidenceThreshold, nmsThreshold, top_k)
+    return rectangles_batch, probes_batch
 
 
 def _parse_result(sizes_batch, boxes_batch, confidences_batch, prob_threshold, iou_threshold=0.5, top_k=5):

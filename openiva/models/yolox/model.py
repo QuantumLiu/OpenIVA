@@ -1,13 +1,16 @@
 import numpy as np
 import cv2
 
-from openiva.models.base import BaseNet
+from openiva.models.base import BaseNetNew
+from openiva.engines import EngineORT
 from .utils import multiclass_nms
 
 __all__ = ["YOLOX", "pre_process", "post_process"]
 
 
-class YOLOX(BaseNet):
+class YOLOX(BaseNetNew):
+    ENGINE_CLASS = EngineORT
+
     def __init__(self, onnx_path, input_size=(640, 640), with_p6=False, sessionOptions=None, providers="cpu"):
         super().__init__(onnx_path, sessionOptions=sessionOptions, providers=providers)
         self.input_size = input_size
@@ -18,6 +21,14 @@ class YOLOX(BaseNet):
 
     def post_process(self, data: dict):
         return post_process(data, self.input_size, self.with_p6)
+
+    @classmethod
+    def func_pre_process(cls):
+        return pre_process
+
+    @classmethod
+    def func_post_process(cls):
+        return post_process
 
 
 def pre_process(data, input_size):

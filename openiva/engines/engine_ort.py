@@ -47,12 +47,16 @@ class EngineORT(Engine):
         self.provider = (self.provider if self.provider[0] in self.__session.get_providers(
         ) else "CPUExecutionProvider")
 
-        self.__input_name = self.__session.get_inputs()[0].name
+        self.inputs_names = [x.name for x in self.__session.get_inputs()]
+        assert len(self.inputs_names) > 0
+
+        self.outputs_names = [x.name for x in self.__session.get_outputs()]
+        assert len(self.inputs_names) > 0
         # self.__session.set_providers(providers=[self.provider])
         print("Using {} external provider".format(
             self.__session.get_providers()))
 
-    def _infer(self, data: dict):
+    def run(self, data: dict):
         """
         Returns onnx inference outputs.
         Args:
@@ -64,79 +68,11 @@ class EngineORT(Engine):
             data_infer = data["data_infer"]
         elif isinstance(data, np.ndarray):
             data_infer = data
-        outputs = self.__session.run(None, {self.__input_name: data_infer})
+        if len(self.inputs_names) == 1:
+            outputs = self.__session.run(
+                None, {self.inputs_names[0]: data_infer})
+        else:
+            outputs = self.__session.run(
+                None, {n: data_infer[n] for n in self.inputs_names})
 
         return outputs
-
-    def pre_process(self, data: dict):
-        """
-        Returns pre-processed ndarray (b,h,w,c).
-        Args:
-            data_raw: raw data ndarray (h,w,c) or list 
-        Returns:
-            pre-processed ndarray (b,h,w,c)
-        """
-        pass
-
-    def _pre_proc_frame(self, img):
-        pass
-
-    def post_process(self, data: dict):
-        """
-        Returns results (b,).
-        Args:
-            outputs: Net outputs ndarrays
-        Returns:
-            results
-        """
-        pass
-
-    def predict(self, data: dict):
-
-        if not isinstance(data, dict):
-            data_dict = {}
-            data_dict["batch_images"] = data
-            data = data_dict
-
-        data_infer = self.pre_process(data)
-        if isinstance(data_infer, dict):
-            data.update(data_infer)
-        else:
-            data["data_infer"] = data_infer
-
-        outputs = self._infer(data)
-        if isinstance(outputs, dict):
-            data.update(outputs)
-        else:
-            data["outputs"] = outputs
-
-        results = self.post_process(data)
-        if isinstance(results, dict):
-            data.update(results)
-        else:
-            data["results"] = results
-
-        return results
-
-    # @classmethod
-    # def func_pre_process(self):
-    #     def func_pre_process(data):
-    #         return self.pre_process(data)
-    #     return func_pre_process
-
-    # @classmethod
-    # def func_post_process(self):
-    #     def func_post_process(data):
-    #         return self.pre_process(data)
-    #     return func_post_process
-
-    @staticmethod
-    def warp_batch(data):
-        if isinstance(data, np.ndarray):
-            if len(data.shape) == 3:
-                return data[None]
-            elif len(data.shape) > 4:
-                raise ValueError(
-                    "Got error data dims expect 3 or 4, got {}".format(len(data)))
-        elif isinstance(data, list):
-            return data

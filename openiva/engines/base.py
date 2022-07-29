@@ -109,4 +109,5 @@ class BaseNet(object):
 
 
 class Engine(object):
-    pass
+    def __init__(self, engine_path, options=None):
+        pass

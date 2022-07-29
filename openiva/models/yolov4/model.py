@@ -1,12 +1,15 @@
 import numpy as np
 import cv2
 
-from openiva.models.base import BaseNet
+from openiva.models.base import BaseNetNew
+from openiva.engines import EngineORT
 
 __all__ = ["YOLOV4", "pre_process", "post_process"]
 
 
-class YOLOV4(BaseNet):
+class YOLOV4(BaseNetNew):
+    ENGINE_CLASS = EngineORT
+
     def __init__(self, onnx_path, input_size=(416, 416), sessionOptions=None, providers="cpu"):
         super().__init__(onnx_path, sessionOptions=sessionOptions, providers=providers)
         self.input_size = input_size

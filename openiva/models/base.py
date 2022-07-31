@@ -166,7 +166,7 @@ class BaseNetNew():
     def load_engine(self, engine_path, **engine_options):
         return self.ENGINE_CLASS(engine_path, **engine_options)
 
-    def _infer(self, data: dict):
+    def infer(self, data: dict):
         """
         Returns onnx inference outputs.
         Args:
@@ -218,7 +218,7 @@ class BaseNetNew():
         else:
             data["data_infer"] = data_infer
 
-        outputs = self._infer(data)
+        outputs = self.infer(data)
         if isinstance(outputs, dict):
             data.update(outputs)
         else:

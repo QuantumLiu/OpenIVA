@@ -1,4 +1,4 @@
-from .base import BaseNet
+from .base import BaseNetNew
 
 
 class ModelConfig(object):
@@ -7,7 +7,7 @@ class ModelConfig(object):
     def from_dict(cls, config_dict):
         return cls(**config_dict)
 
-    def __init__(self, model_name: str, model_calss: BaseNet, weights_path: str, func_preproc: callable = None, func_postproc: callable = None, preproc_kwargs: dict = None, postproc_kwargs: dict = None) -> None:
+    def __init__(self, model_name: str, model_calss: BaseNetNew, weights_path: str, func_preproc: callable = None, func_postproc: callable = None, preproc_kwargs: dict = None, postproc_kwargs: dict = None, **kwargs) -> None:
         super().__init__()
         self._model_name = model_name
         self.model_calss = model_calss
@@ -25,6 +25,8 @@ class ModelConfig(object):
 
         self._postproc_kwargs = (
             {} if postproc_kwargs is None else postproc_kwargs)
+
+        self.kwargs = kwargs
 
         # if not isinstance(keys_preproc, tuple):
         #     if isinstance(keys_preproc, list):
@@ -45,6 +47,7 @@ class ModelConfig(object):
                 "is_proc_batch": self.is_proc_batch,
                 "preproc_kwargs": self.preproc_kwargs,
                 "postproc_kwargs": self.postproc_kwargs,
+                "kwargs": "kwargs"
                 }
 
     @property

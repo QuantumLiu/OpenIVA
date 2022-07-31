@@ -8,3 +8,5 @@ class StoppableThread(Thread):
 
 from .data import ThreadDATA
 from .data import ThreadImgsLocal,ThreadVideoLocal
+
+from .compute import ThreadCompute

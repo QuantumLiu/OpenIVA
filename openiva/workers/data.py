@@ -87,8 +87,6 @@ class ThreadProc(StoppableThread):
                     data_dict_batch = self.q_task.get(timeout=1.)
                     task_id = data_dict_batch["task_id"]
                 except Empty:
-                    if self.stopped:
-                        return
                     continue
 
                 self._apply_proc(task_id, data_dict_batch)
@@ -161,7 +159,7 @@ class ThreadDATA(ThreadProc):
                     q_dict_task = self.q_task.get(timeout=1.)
                     task_id = q_dict_task["task_id"]
                 except Empty:
-                    return
+                    continue
 
                 data_gen_kwargs = (self.data_gen_kwargs).copy()
                 for k in self.data_gen_keys:

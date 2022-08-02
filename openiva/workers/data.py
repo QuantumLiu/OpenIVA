@@ -74,8 +74,9 @@ class ThreadProc(StoppableThread):
             #     q_dict_out[model_config.model_name] = [model_config.func_preproc(
             #         frame, **preproc_kwargs) for frame in batch_data]
 
-        for k in self.key_data:
-            q_dict_out[k] = data_dict_batch.get(k, None)
+        for k in data_dict_batch.keys():
+            if k not in q_dict_out:
+                q_dict_out[k] = data_dict_batch.get(k, None)
 
         self.q_compute.put(q_dict_out)
 

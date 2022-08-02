@@ -53,6 +53,7 @@ def decode_video_batch_local(video_path: str, batch_size: int = 8, skip: int = 1
             q_dict_out['batch_images'] = batch_images
             q_dict_out['batch_indecies'] = batch_indecies
 
+            q_dict_out["info_dict"]=info_dict
             q_dict_out['flag_end'] = (i_sample == last_i)
             yield q_dict_out
 
@@ -87,8 +88,9 @@ def decode_video_batch_local(video_path: str, batch_size: int = 8, skip: int = 1
             for _ in range(batch_size-q_dict_out['real_len']):
                 batch_images.append(empty_frame)
                 batch_indecies.append(i_frame-1)
-        q_dict_out['src_size'] = frame.shape[:2][::-1]
+        q_dict_out['batch_src_size'] = frame.shape[:2][::-1]
         q_dict_out['height'], q_dict_out['width'] = out.shape[:2]
         q_dict_out['batch_images'] = batch_images
         q_dict_out['batch_indecies'] = batch_indecies
+        q_dict_out["info_dict"]=info_dict
         yield q_dict_out

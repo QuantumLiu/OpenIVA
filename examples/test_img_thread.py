@@ -7,7 +7,7 @@ from openiva.commons.io import get_img_pathes_recursively
 from openiva.workers import ThreadImgsLocal
 from openiva.models.group import ModelConfig
 
-from openiva.models.yolov4 import YOLOV4
+from yolov4 import YOLOV4
 
 import sys
 

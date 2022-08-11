@@ -6,8 +6,8 @@ from tqdm import tqdm
 
 import onnxruntime
 
-from openiva.models.detector import Detector
-from openiva.models.alignment import LandmarksExtractor
+from detector import Detector
+from alignment import LandmarksExtractor
 
 if __name__ == "__main__":
     # "datas/imgs_test/lumia.jpg")

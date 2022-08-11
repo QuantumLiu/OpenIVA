@@ -7,15 +7,15 @@ class ModelConfig(object):
     def from_dict(cls, config_dict):
         return cls(**config_dict)
 
-    def __init__(self, model_name: str, model_calss: BaseNetNew, weights_path: str, func_preproc: callable = None, func_postproc: callable = None, preproc_kwargs: dict = None, postproc_kwargs: dict = None, **kwargs) -> None:
+    def __init__(self, model_name: str, model_class: BaseNetNew, weights_path: str, func_preproc: callable = None, func_postproc: callable = None, preproc_kwargs: dict = None, postproc_kwargs: dict = None, **kwargs) -> None:
         super().__init__()
         self._model_name = model_name
-        self.model_calss = model_calss
+        self.model_class = model_class
         self._weights_path = weights_path
 
-        self._func_preproc = self.model_calss.func_pre_process(
+        self._func_preproc = self.model_class.func_pre_process(
         ) if func_preproc is None else func_preproc
-        self._func_postproc = self.model_calss.func_post_process(
+        self._func_postproc = self.model_class.func_post_process(
         ) if func_postproc is None else func_postproc
 
         # self._is_proc_batch = is_proc_batch
@@ -40,7 +40,7 @@ class ModelConfig(object):
 
     def get_dict(self):
         return {"model_name": self.model_name,
-                "model_calss": self.model_calss,
+                "model_class": self.model_class,
                 "weights_path": self.weights_path,
                 "func_preproc": self.func_preproc,
                 "func_postproc": self.func_postproc,

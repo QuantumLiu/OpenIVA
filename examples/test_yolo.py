@@ -7,8 +7,8 @@ from tqdm import tqdm
 
 import onnxruntime
 
-from openiva.models.yolox import YOLOX
-from openiva.models.yolox.utils import vis, COCO_CLASSES
+from yolox import YOLOX
+from yolox.utils import vis, COCO_CLASSES
 
 batch_size = 8
 

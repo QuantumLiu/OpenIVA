@@ -21,7 +21,7 @@ class ThreadCompute(StoppableThread):
     def run(self):
         print("Loading {} model from path {}".format(
             self.model_name, self.weights_path))
-        self.model = self.model_config.model_calss(
+        self.model = self.model_config.model_class(
             self.model_config.weights_path, **self.model_config.kwargs)
 
         while True:

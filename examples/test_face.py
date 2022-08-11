@@ -12,9 +12,9 @@ import onnxruntime
 
 from openiva.commons.facial.database import FacialDB
 
-from openiva.models.detector import Detector
-from openiva.models.alignment import LandmarksExtractor
-from openiva.models.arcface import ArcFace
+from detector import Detector
+from alignment import LandmarksExtractor
+from arcface import ArcFace
 
 from openiva.tools.register_face import register_all
 

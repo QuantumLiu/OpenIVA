@@ -6,7 +6,7 @@ from openiva.workers import ThreadVideoLocal
 from openiva.workers import ThreadCompute
 from openiva.models.group import ModelConfig
 
-from openiva.models.yolov4 import YOLOV4
+from yolov4 import YOLOV4
 import onnxruntime
 
 if __name__ == "__main__":

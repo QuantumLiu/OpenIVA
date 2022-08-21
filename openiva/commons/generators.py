@@ -12,6 +12,10 @@ from .io import imread
 
 
 def read_images_local(pathes_imgs: list, batch_size=8, shuffle=False):
+    '''
+    Data generator for reading local images and produce batch data.
+    '''
+
     q_dict_out = {'flag_start': True, 'flag_end': False, 'real_len': 0}
 
     samples_indecies = np.asarray(range(len(pathes_imgs)))

@@ -16,7 +16,7 @@ from detector import Detector
 from alignment import LandmarksExtractor
 from arcface import ArcFace
 
-from openiva.tools.register_face import register_all
+from register_face import register_all
 
 if __name__ == "__main__":
     so = onnxruntime.SessionOptions()
@@ -86,7 +86,7 @@ if __name__ == "__main__":
             img_wild = cv2.cvtColor(np.asarray(image), cv2.COLOR_RGB2BGR)
 
         for (x, y) in landmark:
-            cv2.circle(img_wild, (int(x), int(y)), 3, (255, 255, 0), -1)
+            cv2.circle(img_wild, (int(x), int(y)), 2, (255, 255, 0), -1)
 
     name = "datas/imgs_results/vis_recog.jpg"
     cv2.imwrite(name, img_wild)

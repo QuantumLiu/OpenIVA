@@ -27,3 +27,5 @@ examples/test_yolo_moto.py
 examples/test_yolox_moto.py
 datas/imgs_results/vis_moto.jpg
 datas/imgs_test/test_moto1.jpg
+
+test_datas

@@ -68,6 +68,8 @@ def post_process(data, input_size, with_p6):
     cls_batch = []
     for b, s in zip(boxes_xyxy, scores):
         dets = multiclass_nms(b, s, nms_thr=0.45, score_thr=0.1)
+        if dets is None:
+            continue
         final_boxes, final_scores, final_cls_inds = dets[:,
                                                          :4], dets[:, 4], dets[:, 5]
 

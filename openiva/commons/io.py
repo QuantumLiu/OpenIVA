@@ -16,6 +16,8 @@ import requests
 def imread(filename):
     return cv2.imdecode(np.fromfile(file=filename, dtype=np.uint8), cv2.IMREAD_COLOR)
 
+def imwrite(filename, img, ext=".png"):
+    cv2.imencode(ext, img)[1].tofile(filename)
 
 def walk_dir_recursively(root_dir, ext_list=None):
     if ext_list is None:

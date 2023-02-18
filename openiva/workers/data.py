@@ -1,3 +1,5 @@
+#This file is for data processing, such as data preprocessing, image reading, etc.
+
 from .import StoppableThread
 from queue import Queue, Empty
 
@@ -13,7 +15,6 @@ from openiva.commons.generators import read_images_local
 class ThreadProc(StoppableThread):
     def __init__(self, q_task: Queue, q_compute: Queue,
                  model_configs: tuple,
-                 key_data: list = None,
                  key_batch_data: str = "batch_images"):
         '''
             Basic class for data loading and processing threads. 
@@ -30,7 +31,6 @@ class ThreadProc(StoppableThread):
                 functional programming interface, configure pre-processing functions for each model and parameters keys,
                          for example:
                              {'model_name': 'yolo',
-                            'key_data': ('batch_images',),
                             'func_preproc': <function __main__.<func_yolo>(x)>,
                             'keys_preproc': ('width','height'),
                             'is_proc_batch': True}
@@ -55,9 +55,6 @@ class ThreadProc(StoppableThread):
 
         self.key_batch_data = key_batch_data
 
-        if isinstance(key_data, (list, tuple)):
-            for k in key_data:
-                self.key_data.append(k)
 
     def _apply_proc(self, task_id, data_dict_batch):
         q_dict_out = {'task_id': task_id}
@@ -101,18 +98,20 @@ class ThreadProc(StoppableThread):
 
 
 class ThreadDATA(ThreadProc):
+    '''
+    Basic class for data loading and processing threads. 
+    Waiting for the tasks in a loop from input `Queue`, read data via a `generator`, and process them by multiple pre-processing functions of models,
+    finally put processed batch datas in output `Queue`.
+    Functional programming, arguments of data generator and processing are defined and passed by `kwargs`.
+    You can just write your own data generator for loading different types of data, and pass it as an argument.
+    
+    '''
     def __init__(self, q_task: Queue, q_compute: Queue,
                  model_configs: tuple,
                  data_gen_func, batch_size: int,
                  data_gen_keys: list, data_gen_kwargs: dict,
-                 key_data: list = None,
                  key_batch_data: str = "batch_images"):
         '''
-            Basic class for data loading and processing threads. 
-            Waiting for the tasks in a loop from input `Queue`, read data via a `generator`, and process them by multiple pre-processing functions of models,
-        finally put processed batch datas in output `Queue`.
-            Functional programming, arguments of data generator and processing are defined and passed by `kwargs`.
-        You can just write your own data generator for loading different types of data, and pass it as an argument.
         args:
             @param q_task: Queue, 
                 the Thread loop and try to get task(dictionary) from it.
@@ -122,7 +121,6 @@ class ThreadDATA(ThreadProc):
                 functional programming interface, configure pre-processing functions for each model and parameters keys,
                          for example:
                              {'model_name': 'yolo',
-                            'key_data': ('batch_images',),
                             'func_preproc': <function __main__.<func_yolo>(x)>,
                             'keys_preproc': ('width','height'),
                             'is_proc_batch': True}
@@ -136,10 +134,12 @@ class ThreadDATA(ThreadProc):
                 a list of string, parameters keys of `data_gen_func`
             @param data_gen_kwargs: dict, 
                 arguments of `data_gen_func`
+            @param key_batch_data: str,
+                the key of batch data in the output dictionary
         '''
 
         super().__init__(q_task, q_compute, model_configs,
-                         key_data=key_data, key_batch_data=key_batch_data)
+                         key_batch_data=key_batch_data)
 
         self.batch_size = batch_size
         self.data_gen_keys = data_gen_keys
@@ -149,7 +149,7 @@ class ThreadDATA(ThreadProc):
 
         self._data_gen_func = data_gen_func
 
-    def run(self):
+    def _run(self):
         if not callable(self._data_gen_func):
             raise NotImplementedError(
                 "Please define the data generator function self._data_gen_func")
